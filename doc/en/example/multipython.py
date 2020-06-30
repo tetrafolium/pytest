@@ -32,24 +32,18 @@ class Python:
     def dumps(self, obj):
         dumpfile = self.picklefile.dirpath("dump.py")
         dumpfile.write(
-            textwrap.dedent(
-                r"""
+            textwrap.dedent(r"""
                 import pickle
                 f = open({!r}, 'wb')
                 s = pickle.dump({!r}, f, protocol=2)
                 f.close()
-                """.format(
-                    str(self.picklefile), obj
-                )
-            )
-        )
+                """.format(str(self.picklefile), obj)))
         subprocess.check_call((self.pythonpath, str(dumpfile)))
 
     def load_and_is_true(self, expression):
         loadfile = self.picklefile.dirpath("load.py")
         loadfile.write(
-            textwrap.dedent(
-                r"""
+            textwrap.dedent(r"""
                 import pickle
                 f = open({!r}, 'rb')
                 obj = pickle.load(f)
@@ -57,11 +51,7 @@ class Python:
                 res = eval({!r})
                 if not res:
                     raise SystemExit(1)
-                """.format(
-                    str(self.picklefile), expression
-                )
-            )
-        )
+                """.format(str(self.picklefile), expression)))
         print(loadfile)
         subprocess.check_call((self.pythonpath, str(loadfile)))
 

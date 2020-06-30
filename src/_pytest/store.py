@@ -5,9 +5,7 @@ from typing import Generic
 from typing import TypeVar
 from typing import Union
 
-
 __all__ = ["Store", "StoreKey"]
-
 
 T = TypeVar("T")
 D = TypeVar("D")
@@ -80,7 +78,7 @@ class Store:
     retrieves its data using these keys.
     """
 
-    __slots__ = ("_store",)
+    __slots__ = ("_store", )
 
     def __init__(self) -> None:
         self._store = {}  # type: Dict[StoreKey[Any], object]

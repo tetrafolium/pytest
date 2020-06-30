@@ -85,7 +85,8 @@ def pytest_configure(config: Config) -> None:
     )
 
 
-def evaluate_condition(item: Item, mark: Mark, condition: object) -> Tuple[bool, str]:
+def evaluate_condition(item: Item, mark: Mark,
+                       condition: object) -> Tuple[bool, str]:
     """Evaluate a single skipif/xfail condition.
 
     If an old-style string condition is given, it is eval()'d, otherwise the
@@ -141,8 +142,8 @@ def evaluate_condition(item: Item, mark: Mark, condition: object) -> Tuple[bool,
         else:
             # XXX better be checked at collection time
             msg = (
-                "Error evaluating %r: " % mark.name
-                + "you need to specify reason=STRING when using booleans as conditions."
+                "Error evaluating %r: " % mark.name +
+                "you need to specify reason=STRING when using booleans as conditions."
             )
             fail(msg, pytrace=False)
 
@@ -162,7 +163,7 @@ def evaluate_skip_marks(item: Item) -> Optional[Skip]:
         if "condition" not in mark.kwargs:
             conditions = mark.args
         else:
-            conditions = (mark.kwargs["condition"],)
+            conditions = (mark.kwargs["condition"], )
 
         # Unconditional.
         if not conditions:
@@ -206,7 +207,7 @@ def evaluate_xfail_marks(item: Item) -> Optional[Xfail]:
         if "condition" not in mark.kwargs:
             conditions = mark.args
         else:
-            conditions = (mark.kwargs["condition"],)
+            conditions = (mark.kwargs["condition"], )
 
         # Unconditional.
         if not conditions:
@@ -279,7 +280,8 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]):
     elif not rep.skipped and xfailed:
         if call.excinfo:
             raises = xfailed.raises
-            if raises is not None and not isinstance(call.excinfo.value, raises):
+            if raises is not None and not isinstance(call.excinfo.value,
+                                                     raises):
                 rep.outcome = "failed"
             else:
                 rep.outcome = "skipped"
@@ -291,11 +293,8 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]):
             else:
                 rep.outcome = "passed"
                 rep.wasxfail = xfailed.reason
-    elif (
-        item._store.get(skipped_by_mark_key, True)
-        and rep.skipped
-        and type(rep.longrepr) is tuple
-    ):
+    elif (item._store.get(skipped_by_mark_key, True) and rep.skipped
+          and type(rep.longrepr) is tuple):
         # skipped by mark.skipif; change the location of the failure
         # to point to the item definition, otherwise it will display
         # the location of where the skip exception was raised within pytest
@@ -305,7 +304,8 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]):
         rep.longrepr = str(filename), line + 1, reason
 
 
-def pytest_report_teststatus(report: BaseReport) -> Optional[Tuple[str, str, str]]:
+def pytest_report_teststatus(
+        report: BaseReport) -> Optional[Tuple[str, str, str]]:
     if hasattr(report, "wasxfail"):
         if report.skipped:
             return "xfailed", "x", "XFAIL"

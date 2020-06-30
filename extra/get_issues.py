@@ -75,11 +75,12 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser("process bitbucket issues")
-    parser.add_argument(
-        "--refresh", action="store_true", help="invalidate cache, refresh issues"
-    )
-    parser.add_argument(
-        "--cache", action="store", default="issues.json", help="cache file"
-    )
+    parser.add_argument("--refresh",
+                        action="store_true",
+                        help="invalidate cache, refresh issues")
+    parser.add_argument("--cache",
+                        action="store",
+                        default="issues.json",
+                        help="cache file")
     args = parser.parse_args()
     main(args)

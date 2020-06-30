@@ -31,12 +31,10 @@ if sys.version_info < (3, 5, 2):
 else:
     from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     from typing import NoReturn
     from typing import Type
     from typing_extensions import Final
-
 
 _T = TypeVar("_T")
 _S = TypeVar("_S")
@@ -52,10 +50,8 @@ class NotSetType(enum.Enum):
 NOTSET = NotSetType.token  # type: Final # noqa: E305
 # fmt: on
 
-MODULE_NOT_FOUND_ERROR = (
-    "ModuleNotFoundError" if sys.version_info[:2] >= (3, 6) else "ImportError"
-)
-
+MODULE_NOT_FOUND_ERROR = ("ModuleNotFoundError" if sys.version_info[:2] >=
+                          (3, 6) else "ImportError")
 
 if sys.version_info >= (3, 8):
     from importlib import metadata as importlib_metadata
@@ -70,7 +66,6 @@ def _format_args(func: Callable[..., Any]) -> str:
 # The type of re.compile objects is not exposed in Python.
 REGEX_TYPE = type(re.compile(""))
 
-
 if sys.version_info < (3, 6):
 
     def fspath(p):
@@ -78,7 +73,6 @@ if sys.version_info < (3, 6):
         real function once we drop py35.
         """
         return str(p)
-
 
 else:
     fspath = os.fspath
@@ -99,14 +93,14 @@ def iscoroutinefunction(func: object) -> bool:
     importing asyncio directly, which in turns also initializes the "logging"
     module as a side-effect (see issue #8).
     """
-    return inspect.iscoroutinefunction(func) or getattr(func, "_is_coroutine", False)
+    return inspect.iscoroutinefunction(func) or getattr(
+        func, "_is_coroutine", False)
 
 
 def is_async_function(func: object) -> bool:
     """Return True if the given function seems to be an async function or async generator"""
-    return iscoroutinefunction(func) or (
-        sys.version_info >= (3, 6) and inspect.isasyncgenfunction(func)
-    )
+    return iscoroutinefunction(func) or (sys.version_info >= (3, 6)
+                                         and inspect.isasyncgenfunction(func))
 
 
 def getlocation(function, curdir=None) -> str:
@@ -127,25 +121,20 @@ def num_mock_patch_args(function) -> int:
         return 0
 
     mock_sentinel = getattr(sys.modules.get("mock"), "DEFAULT", object())
-    ut_mock_sentinel = getattr(sys.modules.get("unittest.mock"), "DEFAULT", object())
+    ut_mock_sentinel = getattr(sys.modules.get("unittest.mock"), "DEFAULT",
+                               object())
 
-    return len(
-        [
-            p
-            for p in patchings
-            if not p.attribute_name
-            and (p.new is mock_sentinel or p.new is ut_mock_sentinel)
-        ]
-    )
+    return len([
+        p for p in patchings if not p.attribute_name and (
+            p.new is mock_sentinel or p.new is ut_mock_sentinel)
+    ])
 
 
-def getfuncargnames(
-    function: Callable[..., Any],
-    *,
-    name: str = "",
-    is_method: bool = False,
-    cls: Optional[type] = None
-) -> Tuple[str, ...]:
+def getfuncargnames(function: Callable[..., Any],
+                    *,
+                    name: str = "",
+                    is_method: bool = False,
+                    cls: Optional[type] = None) -> Tuple[str, ...]:
     """Returns the names of a function's mandatory arguments.
 
     This should return the names of all function arguments that:
@@ -178,23 +167,17 @@ def getfuncargnames(
         )
 
     arg_names = tuple(
-        p.name
-        for p in parameters.values()
-        if (
-            p.kind is Parameter.POSITIONAL_OR_KEYWORD
-            or p.kind is Parameter.KEYWORD_ONLY
-        )
-        and p.default is Parameter.empty
-    )
+        p.name for p in parameters.values()
+        if (p.kind is Parameter.POSITIONAL_OR_KEYWORD or
+            p.kind is Parameter.KEYWORD_ONLY) and p.default is Parameter.empty)
     if not name:
         name = function.__name__
 
     # If this function should be treated as a bound method even though
     # it's passed as an unbound method or function, remove the first
     # parameter name.
-    if is_method or (
-        cls and not isinstance(cls.__dict__.get(name, None), staticmethod)
-    ):
+    if is_method or (cls and not isinstance(cls.__dict__.get(name, None),
+                                            staticmethod)):
         arg_names = arg_names[1:]
     # Remove any names that will be replaced with mocks.
     if hasattr(function, "__wrapped__"):
@@ -208,7 +191,6 @@ if sys.version_info < (3, 7):
     def nullcontext():
         yield
 
-
 else:
     from contextlib import nullcontext  # noqa
 
@@ -217,19 +199,20 @@ def get_default_arg_names(function: Callable[..., Any]) -> Tuple[str, ...]:
     # Note: this code intentionally mirrors the code at the beginning of getfuncargnames,
     # to get the arguments which were excluded from its result because they had default values
     return tuple(
-        p.name
-        for p in signature(function).parameters.values()
+        p.name for p in signature(function).parameters.values()
         if p.kind in (Parameter.POSITIONAL_OR_KEYWORD, Parameter.KEYWORD_ONLY)
-        and p.default is not Parameter.empty
-    )
+        and p.default is not Parameter.empty)
 
 
 _non_printable_ascii_translate_table = {
-    i: "\\x{:02x}".format(i) for i in range(128) if i not in range(32, 127)
+    i: "\\x{:02x}".format(i)
+    for i in range(128) if i not in range(32, 127)
 }
-_non_printable_ascii_translate_table.update(
-    {ord("\t"): "\\t", ord("\r"): "\\r", ord("\n"): "\\n"}
-)
+_non_printable_ascii_translate_table.update({
+    ord("\t"): "\\t",
+    ord("\r"): "\\r",
+    ord("\n"): "\\n"
+})
 
 
 def _translate_non_printable(s: str) -> str:
@@ -299,10 +282,8 @@ def get_real_func(obj):
         obj = new_obj
     else:
         raise ValueError(
-            ("could not find real function of {start}\nstopped at {current}").format(
-                start=saferepr(start_obj), current=saferepr(obj)
-            )
-        )
+            ("could not find real function of {start}\nstopped at {current}"
+             ).format(start=saferepr(start_obj), current=saferepr(obj)))
     if isinstance(obj, functools.partial):
         obj = obj.func
     return obj
@@ -363,7 +344,6 @@ if getattr(attr, "__version_info__", ()) >= (19, 2):
 else:
     ATTRS_EQ_FIELD = "cmp"
 
-
 if sys.version_info >= (3, 8):
     from functools import cached_property
 else:
@@ -377,14 +357,17 @@ else:
 
         @overload
         def __get__(
-            self, instance: None, owner: Optional["Type[_S]"] = ...
+            self,
+            instance: None,
+            owner: Optional["Type[_S]"] = ...
         ) -> "cached_property[_S, _T]":
             raise NotImplementedError()
 
         @overload  # noqa: F811
         def __get__(  # noqa: F811
-            self, instance: _S, owner: Optional["Type[_S]"] = ...
-        ) -> _T:
+                self,
+                instance: _S,
+                owner: Optional["Type[_S]"] = ...) -> _T:
             raise NotImplementedError()
 
         def __get__(self, instance, owner=None):  # noqa: F811
@@ -438,4 +421,5 @@ else:
 #
 # This also work for Enums (if you use `is` to compare) and Literals.
 def assert_never(value: "NoReturn") -> "NoReturn":
-    assert False, "Unhandled value: {} ({})".format(value, type(value).__name__)
+    assert False, "Unhandled value: {} ({})".format(value,
+                                                    type(value).__name__)

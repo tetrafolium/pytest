@@ -68,14 +68,16 @@ class Source:
     def __getitem__(self, key: slice) -> "Source":  # noqa: F811
         raise NotImplementedError()
 
-    def __getitem__(self, key: Union[int, slice]) -> Union[str, "Source"]:  # noqa: F811
+    def __getitem__(
+            self, key: Union[int,
+                             slice]) -> Union[str, "Source"]:  # noqa: F811
         if isinstance(key, int):
             return self.lines[key]
         else:
             if key.step not in (None, 1):
                 raise IndexError("cannot slice a Source with a step")
             newsource = Source()
-            newsource.lines = self.lines[key.start: key.stop]
+            newsource.lines = self.lines[key.start:key.stop]
             return newsource
 
     def __iter__(self) -> Iterator[str]:
@@ -97,9 +99,10 @@ class Source:
         source.lines[:] = self.lines[start:end]
         return source
 
-    def putaround(
-        self, before: str = "", after: str = "", indent: str = " " * 4
-    ) -> "Source":
+    def putaround(self,
+                  before: str = "",
+                  after: str = "",
+                  indent: str = " " * 4) -> "Source":
         """ return a copy of the source object with
             'before' and 'after' wrapped around it.
         """
@@ -160,12 +163,12 @@ class Source:
 
     @overload
     def compile(
-        self,
-        filename: Optional[str] = ...,
-        mode: str = ...,
-        flag: "Literal[0]" = ...,
-        dont_inherit: int = ...,
-        _genframe: Optional[FrameType] = ...,
+            self,
+            filename: Optional[str] = ...,
+            mode: str = ...,
+            flag: "Literal[0]" = ...,
+            dont_inherit: int = ...,
+            _genframe: Optional[FrameType] = ...,
     ) -> CodeType:
         raise NotImplementedError()
 
@@ -207,10 +210,11 @@ class Source:
             co = compile(source, filename, mode, flag)
         except SyntaxError as ex:
             # re-represent syntax errors from parsing python strings
-            msglines = self.lines[: ex.lineno]
+            msglines = self.lines[:ex.lineno]
             if ex.offset:
                 msglines.append(" " * ex.offset + "^")
-            msglines.append("(code was compiled probably from here: %s)" % filename)
+            msglines.append("(code was compiled probably from here: %s)" %
+                            filename)
             newex = SyntaxError("\n".join(msglines))
             newex.offset = ex.offset
             newex.lineno = ex.lineno
@@ -223,7 +227,8 @@ class Source:
             assert isinstance(co, CodeType)
             lines = [(x + "\n") for x in self.lines]
             # Type ignored because linecache.cache is private.
-            linecache.cache[filename] = (1, None, lines, filename)  # type: ignore
+            linecache.cache[filename] = (1, None, lines, filename
+                                         )  # type: ignore
             return co
 
 
@@ -234,11 +239,11 @@ class Source:
 
 @overload
 def compile_(
-    source: Union[str, bytes, ast.mod, ast.AST],
-    filename: Optional[str] = ...,
-    mode: str = ...,
-    flags: "Literal[0]" = ...,
-    dont_inherit: int = ...,
+        source: Union[str, bytes, ast.mod, ast.AST],
+        filename: Optional[str] = ...,
+        mode: str = ...,
+        flags: "Literal[0]" = ...,
+        dont_inherit: int = ...,
 ) -> CodeType:
     raise NotImplementedError()
 
@@ -321,7 +326,8 @@ def deindent(lines: Sequence[str]) -> List[str]:
     return textwrap.dedent("\n".join(lines)).splitlines()
 
 
-def get_statement_startend2(lineno: int, node: ast.AST) -> Tuple[int, Optional[int]]:
+def get_statement_startend2(lineno: int,
+                            node: ast.AST) -> Tuple[int, Optional[int]]:
     # flatten all statements and except handlers into one lineno-list
     # AST's line numbers start indexing at 1
     values = []  # type: List[int]
@@ -344,10 +350,10 @@ def get_statement_startend2(lineno: int, node: ast.AST) -> Tuple[int, Optional[i
 
 
 def getstatementrange_ast(
-    lineno: int,
-    source: Source,
-    assertion: bool = False,
-    astnode: Optional[ast.AST] = None,
+        lineno: int,
+        source: Source,
+        assertion: bool = False,
+        astnode: Optional[ast.AST] = None,
 ) -> Tuple[ast.AST, int, int]:
     if astnode is None:
         content = str(source)

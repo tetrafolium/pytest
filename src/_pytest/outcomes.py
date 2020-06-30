@@ -28,14 +28,16 @@ class OutcomeException(BaseException):
     """ OutcomeException and its subclass instances indicate and
         contain info about test and collection outcomes.
     """
-
-    def __init__(self, msg: Optional[str] = None, pytrace: bool = True) -> None:
+    def __init__(self,
+                 msg: Optional[str] = None,
+                 pytrace: bool = True) -> None:
         if msg is not None and not isinstance(msg, str):
             error_msg = (
                 "{} expected string as 'msg' parameter, got '{}' instead.\n"
-                "Perhaps you meant to use a mark?"
-            )
-            raise TypeError(error_msg.format(type(self).__name__, type(msg).__name__))
+                "Perhaps you meant to use a mark?")
+            raise TypeError(
+                error_msg.format(type(self).__name__,
+                                 type(msg).__name__))
         BaseException.__init__(self, msg)
         self.msg = msg
         self.pytrace = pytrace
@@ -57,10 +59,10 @@ class Skipped(OutcomeException):
     __module__ = "builtins"
 
     def __init__(
-        self,
-        msg: Optional[str] = None,
-        pytrace: bool = True,
-        allow_module_level: bool = False,
+            self,
+            msg: Optional[str] = None,
+            pytrace: bool = True,
+            allow_module_level: bool = False,
     ) -> None:
         OutcomeException.__init__(self, msg=msg, pytrace=pytrace)
         self.allow_module_level = allow_module_level
@@ -74,10 +76,9 @@ class Failed(OutcomeException):
 
 class Exit(Exception):
     """ raised for immediate program exits (no tracebacks/summaries)"""
-
-    def __init__(
-        self, msg: str = "unknown reason", returncode: Optional[int] = None
-    ) -> None:
+    def __init__(self,
+                 msg: str = "unknown reason",
+                 returncode: Optional[int] = None) -> None:
         self.msg = msg
         self.returncode = returncode
         super().__init__(msg)
@@ -95,7 +96,8 @@ class _WithException(Protocol[_F, _ET]):
     __call__ = None  # type: _F
 
 
-def _with_exception(exception_type: _ET) -> Callable[[_F], _WithException[_F, _ET]]:
+def _with_exception(
+        exception_type: _ET) -> Callable[[_F], _WithException[_F, _ET]]:
     def decorate(func: _F) -> _WithException[_F, _ET]:
         func_with_exception = cast(_WithException[_F, _ET], func)
         func_with_exception.Exception = exception_type
@@ -175,9 +177,9 @@ def xfail(reason: str = "") -> "NoReturn":
     raise XFailed(reason)
 
 
-def importorskip(
-    modname: str, minversion: Optional[str] = None, reason: Optional[str] = None
-) -> Any:
+def importorskip(modname: str,
+                 minversion: Optional[str] = None,
+                 reason: Optional[str] = None) -> Any:
     """Imports and returns the requested module ``modname``, or skip the
     current test if the module cannot be imported.
 
@@ -220,8 +222,8 @@ def importorskip(
 
         if verattr is None or Version(verattr) < Version(minversion):
             raise Skipped(
-                "module %r has __version__ %r, required is: %r"
-                % (modname, verattr, minversion),
+                "module %r has __version__ %r, required is: %r" %
+                (modname, verattr, minversion),
                 allow_module_level=True,
             )
     return mod

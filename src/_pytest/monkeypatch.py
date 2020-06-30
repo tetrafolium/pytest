@@ -20,7 +20,6 @@ from _pytest.pathlib import Path
 
 RE_IMPORT_ERROR_NAME = re.compile(r"^No module named (.*)$")
 
-
 K = TypeVar("K")
 V = TypeVar("V")
 
@@ -73,7 +72,8 @@ def resolve(name: str) -> object:
             if expected == used:
                 raise
             else:
-                raise ImportError("import error in {}: {}".format(used, ex)) from ex
+                raise ImportError("import error in {}: {}".format(used,
+                                                                  ex)) from ex
         found = annotated_getattr(found, part, used)
     return found
 
@@ -82,19 +82,15 @@ def annotated_getattr(obj: object, name: str, ann: str) -> object:
     try:
         obj = getattr(obj, name)
     except AttributeError as e:
-        raise AttributeError(
-            "{!r} object at {} has no attribute {!r}".format(
-                type(obj).__name__, ann, name
-            )
-        ) from e
+        raise AttributeError("{!r} object at {} has no attribute {!r}".format(
+            type(obj).__name__, ann, name)) from e
     return obj
 
 
 def derive_importpath(import_path: str, raising: bool) -> Tuple[str, object]:
     if not isinstance(import_path, str) or "." not in import_path:
-        raise TypeError(
-            "must be absolute import path string, not {!r}".format(import_path)
-        )
+        raise TypeError("must be absolute import path string, not {!r}".format(
+            import_path))
     module, attr = import_path.rsplit(".", 1)
     target = resolve(module)
     if raising:
@@ -113,12 +109,10 @@ notset = Notset()
 class MonkeyPatch:
     """ Object returned by the ``monkeypatch`` fixture keeping a record of setattr/item/env/syspath changes.
     """
-
     def __init__(self) -> None:
         self._setattr = []  # type: List[Tuple[object, str, object]]
         self._setitem = (
-            []
-        )  # type: List[Tuple[MutableMapping[Any, Any], object, object]]
+            [])  # type: List[Tuple[MutableMapping[Any, Any], object, object]]
         self._cwd = None  # type: Optional[str]
         self._savesyspath = None  # type: Optional[List[str]]
 
@@ -149,13 +143,21 @@ class MonkeyPatch:
 
     @overload
     def setattr(
-        self, target: str, name: object, value: Notset = ..., raising: bool = ...,
+            self,
+            target: str,
+            name: object,
+            value: Notset = ...,
+            raising: bool = ...,
     ) -> None:
         raise NotImplementedError()
 
     @overload  # noqa: F811
     def setattr(  # noqa: F811
-        self, target: object, name: str, value: object, raising: bool = ...,
+        self,
+        target: object,
+        name: str,
+        value: object,
+        raising: bool = ...,
     ) -> None:
         raise NotImplementedError()
 
@@ -187,8 +189,7 @@ class MonkeyPatch:
                 raise TypeError(
                     "use setattr(target, name, value) or "
                     "setattr(target, value) with target being a dotted "
-                    "import string"
-                )
+                    "import string")
             value = name
             name, target = derive_importpath(target, raising)
         else:
@@ -196,12 +197,12 @@ class MonkeyPatch:
                 raise TypeError(
                     "use setattr(target, name, value) with name being a string or "
                     "setattr(target, value) with target being a dotted "
-                    "import string"
-                )
+                    "import string")
 
         oldval = getattr(target, name, notset)
         if raising and oldval is notset:
-            raise AttributeError("{!r} has no attribute {!r}".format(target, name))
+            raise AttributeError("{!r} has no attribute {!r}".format(
+                target, name))
 
         # avoid class descriptors like staticmethod/classmethod
         if inspect.isclass(target):
@@ -210,10 +211,10 @@ class MonkeyPatch:
         setattr(target, name, value)
 
     def delattr(
-        self,
-        target: Union[object, str],
-        name: Union[str, Notset] = notset,
-        raising: bool = True,
+            self,
+            target: Union[object, str],
+            name: Union[str, Notset] = notset,
+            raising: bool = True,
     ) -> None:
         """ Delete attribute ``name`` from ``target``, by default raise
         AttributeError it the attribute did not previously exist.
@@ -230,11 +231,9 @@ class MonkeyPatch:
 
         if isinstance(name, Notset):
             if not isinstance(target, str):
-                raise TypeError(
-                    "use delattr(target, name) or "
-                    "delattr(target) with target being a dotted "
-                    "import string"
-                )
+                raise TypeError("use delattr(target, name) or "
+                                "delattr(target) with target being a dotted "
+                                "import string")
             name, target = derive_importpath(target, raising)
 
         if not hasattr(target, name):
@@ -253,7 +252,10 @@ class MonkeyPatch:
         self._setitem.append((dic, name, dic.get(name, notset)))
         dic[name] = value
 
-    def delitem(self, dic: MutableMapping[K, V], name: K, raising: bool = True) -> None:
+    def delitem(self,
+                dic: MutableMapping[K, V],
+                name: K,
+                raising: bool = True) -> None:
         """ Delete ``name`` from dict. Raise KeyError if it doesn't exist.
 
         If ``raising`` is set to False, no exception will be raised if the
@@ -266,7 +268,10 @@ class MonkeyPatch:
             self._setitem.append((dic, name, dic.get(name, notset)))
             del dic[name]
 
-    def setenv(self, name: str, value: str, prepend: Optional[str] = None) -> None:
+    def setenv(self,
+               name: str,
+               value: str,
+               prepend: Optional[str] = None) -> None:
         """ Set environment variable ``name`` to ``value``.  If ``prepend``
         is a character, read the current environment variable value
         and prepend the ``value`` adjoined with the ``prepend`` character."""
@@ -274,10 +279,8 @@ class MonkeyPatch:
             warnings.warn(
                 pytest.PytestWarning(
                     "Value of environment variable {name} type should be str, but got "
-                    "{value!r} (type: {type}); converted to str implicitly".format(
-                        name=name, value=value, type=type(value).__name__
-                    )
-                ),
+                    "{value!r} (type: {type}); converted to str implicitly".
+                    format(name=name, value=value, type=type(value).__name__)),
                 stacklevel=2,
             )
             value = str(value)

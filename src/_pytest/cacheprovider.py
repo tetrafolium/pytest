@@ -33,7 +33,6 @@ from _pytest.main import Session
 from _pytest.python import Module
 from _pytest.reports import TestReport
 
-
 README_CONTENT = """\
 # pytest cache directory #
 
@@ -180,7 +179,8 @@ class LFPluginCollWrapper:
         self._collected_at_least_one_failure = False
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_make_collect_report(self, collector: nodes.Collector) -> Generator:
+    def pytest_make_collect_report(self,
+                                   collector: nodes.Collector) -> Generator:
         if isinstance(collector, Session):
             out = yield
             res = out.get_result()  # type: CollectReport
@@ -188,7 +188,8 @@ class LFPluginCollWrapper:
             # Sort any lf-paths to the beginning.
             lf_paths = self.lfplugin._last_failed_paths
             res.result = sorted(
-                res.result, key=lambda x: 0 if Path(str(x.fspath)) in lf_paths else 1,
+                res.result,
+                key=lambda x: 0 if Path(str(x.fspath)) in lf_paths else 1,
             )
             return
 
@@ -204,15 +205,13 @@ class LFPluginCollWrapper:
                     if not any(x.nodeid in lastfailed for x in result):
                         return
                     self.lfplugin.config.pluginmanager.register(
-                        LFPluginCollSkipfiles(self.lfplugin), "lfplugin-collskip"
-                    )
+                        LFPluginCollSkipfiles(self.lfplugin),
+                        "lfplugin-collskip")
                     self._collected_at_least_one_failure = True
 
                 session = collector.session
                 result[:] = [
-                    x
-                    for x in result
-                    if x.nodeid in lastfailed
+                    x for x in result if x.nodeid in lastfailed
                     # Include any passed arguments (not trivial to filter).
                     or session.isinitpath(x.fspath)
                     # Keep all sub-collectors.
@@ -228,43 +227,44 @@ class LFPluginCollSkipfiles:
 
     @pytest.hookimpl
     def pytest_make_collect_report(
-        self, collector: nodes.Collector
-    ) -> Optional[CollectReport]:
+            self, collector: nodes.Collector) -> Optional[CollectReport]:
         if isinstance(collector, Module):
-            if Path(str(collector.fspath)) not in self.lfplugin._last_failed_paths:
+            if Path(str(
+                    collector.fspath)) not in self.lfplugin._last_failed_paths:
                 self.lfplugin._skipped_files += 1
 
-                return CollectReport(
-                    collector.nodeid, "passed", longrepr=None, result=[]
-                )
+                return CollectReport(collector.nodeid,
+                                     "passed",
+                                     longrepr=None,
+                                     result=[])
         return None
 
 
 class LFPlugin:
     """ Plugin which implements the --lf (run last-failing) option """
-
     def __init__(self, config: Config) -> None:
         self.config = config
         active_keys = "lf", "failedfirst"
         self.active = any(config.getoption(key) for key in active_keys)
         assert config.cache
-        self.lastfailed = config.cache.get(
-            "cache/lastfailed", {}
-        )  # type: Dict[str, bool]
+        self.lastfailed = config.cache.get("cache/lastfailed",
+                                           {})  # type: Dict[str, bool]
         self._previously_failed_count = None  # type: Optional[int]
         self._report_status = None  # type: Optional[str]
         self._skipped_files = 0  # count skipped files during collection due to --lf
 
         if config.getoption("lf"):
             self._last_failed_paths = self.get_last_failed_paths()
-            config.pluginmanager.register(
-                LFPluginCollWrapper(self), "lfplugin-collwrapper"
-            )
+            config.pluginmanager.register(LFPluginCollWrapper(self),
+                                          "lfplugin-collwrapper")
 
     def get_last_failed_paths(self) -> Set[Path]:
         """Returns a set with all Paths()s of the previously failed nodeids."""
         rootpath = Path(str(self.config.rootdir))
-        result = {rootpath / nodeid.split("::")[0] for nodeid in self.lastfailed}
+        result = {
+            rootpath / nodeid.split("::")[0]
+            for nodeid in self.lastfailed
+        }
         return {x for x in result if x.exists()}
 
     def pytest_report_collectionfinish(self) -> Optional[str]:
@@ -283,14 +283,15 @@ class LFPlugin:
         if passed:
             if report.nodeid in self.lastfailed:
                 self.lastfailed.pop(report.nodeid)
-                self.lastfailed.update((item.nodeid, True) for item in report.result)
+                self.lastfailed.update(
+                    (item.nodeid, True) for item in report.result)
         else:
             self.lastfailed[report.nodeid] = True
 
     @pytest.hookimpl(hookwrapper=True, tryfirst=True)
     def pytest_collection_modifyitems(
-        self, config: Config, items: List[nodes.Item]
-    ) -> Generator[None, None, None]:
+            self, config: Config,
+            items: List[nodes.Item]) -> Generator[None, None, None]:
         yield
 
         if not self.active:
@@ -310,8 +311,7 @@ class LFPlugin:
                 # Running a subset of all tests with recorded failures
                 # only outside of it.
                 self._report_status = "%d known failures not in selected tests" % (
-                    len(self.lastfailed),
-                )
+                    len(self.lastfailed), )
             else:
                 if self.config.getoption("lf"):
                     items[:] = previously_failed
@@ -320,16 +320,17 @@ class LFPlugin:
                     items[:] = previously_failed + previously_passed
 
                 noun = "failure" if self._previously_failed_count == 1 else "failures"
-                suffix = " first" if self.config.getoption("failedfirst") else ""
+                suffix = " first" if self.config.getoption(
+                    "failedfirst") else ""
                 self._report_status = "rerun previous {count} {noun}{suffix}".format(
-                    count=self._previously_failed_count, suffix=suffix, noun=noun
-                )
+                    count=self._previously_failed_count,
+                    suffix=suffix,
+                    noun=noun)
 
             if self._skipped_files > 0:
                 files_noun = "file" if self._skipped_files == 1 else "files"
                 self._report_status += " (skipped {files} {files_noun})".format(
-                    files=self._skipped_files, files_noun=files_noun
-                )
+                    files=self._skipped_files, files_noun=files_noun)
         else:
             self._report_status = "no previously failed tests, "
             if self.config.getoption("last_failed_no_failures") == "none":
@@ -352,7 +353,6 @@ class LFPlugin:
 
 class NFPlugin:
     """ Plugin which implements the --nf (run new-first) option """
-
     def __init__(self, config: Config) -> None:
         self.config = config
         self.active = config.option.newfirst
@@ -361,13 +361,13 @@ class NFPlugin:
 
     @pytest.hookimpl(hookwrapper=True, tryfirst=True)
     def pytest_collection_modifyitems(
-        self, items: List[nodes.Item]
-    ) -> Generator[None, None, None]:
+            self, items: List[nodes.Item]) -> Generator[None, None, None]:
         yield
 
         if self.active:
             new_items = order_preserving_dict()  # type: Dict[str, nodes.Item]
-            other_items = order_preserving_dict()  # type: Dict[str, nodes.Item]
+            other_items = order_preserving_dict(
+            )  # type: Dict[str, nodes.Item]
             for item in items:
                 if item.nodeid not in self.cached_nodeids:
                     new_items[item.nodeid] = item
@@ -375,14 +375,17 @@ class NFPlugin:
                     other_items[item.nodeid] = item
 
             items[:] = self._get_increasing_order(
-                new_items.values()
-            ) + self._get_increasing_order(other_items.values())
+                new_items.values()) + self._get_increasing_order(
+                    other_items.values())
             self.cached_nodeids.update(new_items)
         else:
             self.cached_nodeids.update(item.nodeid for item in items)
 
-    def _get_increasing_order(self, items: Iterable[nodes.Item]) -> List[nodes.Item]:
-        return sorted(items, key=lambda item: item.fspath.mtime(), reverse=True)
+    def _get_increasing_order(self,
+                              items: Iterable[nodes.Item]) -> List[nodes.Item]:
+        return sorted(items,
+                      key=lambda item: item.fspath.mtime(),
+                      reverse=True)
 
     def pytest_sessionfinish(self) -> None:
         config = self.config
@@ -428,10 +431,8 @@ def pytest_addoption(parser: Parser) -> None:
         action="append",
         nargs="?",
         dest="cacheshow",
-        help=(
-            "show cache contents, don't perform collection or tests. "
-            "Optional argument: glob (default: '*')."
-        ),
+        help=("show cache contents, don't perform collection or tests. "
+              "Optional argument: glob (default: '*')."),
     )
     group.addoption(
         "--cache-clear",
@@ -441,8 +442,11 @@ def pytest_addoption(parser: Parser) -> None:
     )
     cache_dir_default = ".pytest_cache"
     if "TOX_ENV_DIR" in os.environ:
-        cache_dir_default = os.path.join(os.environ["TOX_ENV_DIR"], cache_dir_default)
-    parser.addini("cache_dir", default=cache_dir_default, help="cache directory path.")
+        cache_dir_default = os.path.join(os.environ["TOX_ENV_DIR"],
+                                         cache_dir_default)
+    parser.addini("cache_dir",
+                  default=cache_dir_default,
+                  help="cache directory path.")
     group.addoption(
         "--lfnf",
         "--last-failed-no-failures",
@@ -488,7 +492,8 @@ def cache(request: FixtureRequest) -> Cache:
 
 def pytest_report_header(config: Config) -> Optional[str]:
     """Display cachedir with --cache-show and if non-default."""
-    if config.option.verbose > 0 or config.getini("cache_dir") != ".pytest_cache":
+    if config.option.verbose > 0 or config.getini(
+            "cache_dir") != ".pytest_cache":
         assert config.cache is not None
         cachedir = config.cache._cachedir
         # TODO: evaluate generating upward relative paths
@@ -540,5 +545,7 @@ def cacheshow(config: Config, session: Session) -> int:
             #    print("%s/" % p.relto(basedir))
             if p.is_file():
                 key = p.relative_to(basedir)
-                tw.line("{} is a file of length {:d}".format(key, p.stat().st_size))
+                tw.line("{} is a file of length {:d}".format(
+                    key,
+                    p.stat().st_size))
     return 0

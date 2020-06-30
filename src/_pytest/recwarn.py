@@ -21,7 +21,6 @@ from _pytest.outcomes import fail
 if TYPE_CHECKING:
     from typing import Type
 
-
 T = TypeVar("T")
 
 
@@ -39,22 +38,22 @@ def recwarn() -> Generator["WarningsRecorder", None, None]:
 
 
 @overload
-def deprecated_call(
-    *, match: Optional[Union[str, "Pattern"]] = ...
-) -> "WarningsRecorder":
+def deprecated_call(*,
+                    match: Optional[Union[str, "Pattern"]] = ...
+                    ) -> "WarningsRecorder":
     raise NotImplementedError()
 
 
 @overload  # noqa: F811
 def deprecated_call(  # noqa: F811
-    func: Callable[..., T], *args: Any, **kwargs: Any
-) -> T:
+        func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     raise NotImplementedError()
 
 
 def deprecated_call(  # noqa: F811
-    func: Optional[Callable] = None, *args: Any, **kwargs: Any
-) -> Union["WarningsRecorder", Any]:
+        func: Optional[Callable] = None,
+        *args: Any,
+        **kwargs: Any) -> Union["WarningsRecorder", Any]:
     """Assert that code produces a ``DeprecationWarning`` or ``PendingDeprecationWarning``.
 
     This function can be used as a context manager::
@@ -79,35 +78,33 @@ def deprecated_call(  # noqa: F811
     """
     __tracebackhide__ = True
     if func is not None:
-        args = (func,) + args
-    return warns((DeprecationWarning, PendingDeprecationWarning), *args, **kwargs)
+        args = (func, ) + args
+    return warns((DeprecationWarning, PendingDeprecationWarning), *args,
+                 **kwargs)
 
 
 @overload
-def warns(
-    expected_warning: Optional[Union["Type[Warning]", Tuple["Type[Warning]", ...]]],
-    *,
-    match: "Optional[Union[str, Pattern]]" = ...
-) -> "WarningsChecker":
+def warns(expected_warning: Optional[Union["Type[Warning]",
+                                           Tuple["Type[Warning]", ...]]],
+          *,
+          match: "Optional[Union[str, Pattern]]" = ...) -> "WarningsChecker":
     raise NotImplementedError()
 
 
 @overload  # noqa: F811
 def warns(  # noqa: F811
-    expected_warning: Optional[Union["Type[Warning]", Tuple["Type[Warning]", ...]]],
-    func: Callable[..., T],
-    *args: Any,
-    **kwargs: Any
-) -> T:
+        expected_warning: Optional[Union["Type[Warning]",
+                                         Tuple["Type[Warning]", ...]]],
+        func: Callable[..., T], *args: Any, **kwargs: Any) -> T:
     raise NotImplementedError()
 
 
 def warns(  # noqa: F811
-    expected_warning: Optional[Union["Type[Warning]", Tuple["Type[Warning]", ...]]],
-    *args: Any,
-    match: Optional[Union[str, "Pattern"]] = None,
-    **kwargs: Any
-) -> Union["WarningsChecker", Any]:
+        expected_warning: Optional[Union["Type[Warning]",
+                                         Tuple["Type[Warning]", ...]]],
+        *args: Any,
+        match: Optional[Union[str, "Pattern"]] = None,
+        **kwargs: Any) -> Union["WarningsChecker", Any]:
     r"""Assert that code raises a particular class of warning.
 
     Specifically, the parameter ``expected_warning`` can be a warning class or
@@ -150,9 +147,8 @@ def warns(  # noqa: F811
     else:
         func = args[0]
         if not callable(func):
-            raise TypeError(
-                "{!r} object (type: {}) must be callable".format(func, type(func))
-            )
+            raise TypeError("{!r} object (type: {}) must be callable".format(
+                func, type(func)))
         with WarningsChecker(expected_warning):
             return func(*args[1:], **kwargs)
 
@@ -162,7 +158,6 @@ class WarningsRecorder(warnings.catch_warnings):
 
     Adapted from `warnings.catch_warnings`.
     """
-
     def __init__(self) -> None:
         # Type ignored due to the way typeshed handles warnings.catch_warnings.
         super().__init__(record=True)  # type: ignore[call-arg] # noqa: F821
@@ -212,10 +207,10 @@ class WarningsRecorder(warnings.catch_warnings):
         return self
 
     def __exit__(
-        self,
-        exc_type: Optional["Type[BaseException]"],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+            self,
+            exc_type: Optional["Type[BaseException]"],
+            exc_val: Optional[BaseException],
+            exc_tb: Optional[TracebackType],
     ) -> None:
         if not self._entered:
             __tracebackhide__ = True
@@ -230,11 +225,11 @@ class WarningsRecorder(warnings.catch_warnings):
 
 class WarningsChecker(WarningsRecorder):
     def __init__(
-        self,
-        expected_warning: Optional[
-            Union["Type[Warning]", Tuple["Type[Warning]", ...]]
-        ] = None,
-        match_expr: Optional[Union[str, "Pattern"]] = None,
+            self,
+            expected_warning: Optional[Union["Type[Warning]",
+                                             Tuple["Type[Warning]",
+                                                   ...]]] = None,
+            match_expr: Optional[Union[str, "Pattern"]] = None,
     ) -> None:
         super().__init__()
 
@@ -247,7 +242,7 @@ class WarningsChecker(WarningsRecorder):
                     raise TypeError(msg % type(exc))
             expected_warning_tup = expected_warning
         elif issubclass(expected_warning, Warning):
-            expected_warning_tup = (expected_warning,)
+            expected_warning_tup = (expected_warning, )
         else:
             raise TypeError(msg % type(expected_warning))
 
@@ -255,10 +250,10 @@ class WarningsChecker(WarningsRecorder):
         self.match_expr = match_expr
 
     def __exit__(
-        self,
-        exc_type: Optional["Type[BaseException]"],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+            self,
+            exc_type: Optional["Type[BaseException]"],
+            exc_val: Optional[BaseException],
+            exc_tb: Optional[TracebackType],
     ) -> None:
         super().__exit__(exc_type, exc_val, exc_tb)
 
@@ -267,18 +262,19 @@ class WarningsChecker(WarningsRecorder):
         # only check if we're not currently handling an exception
         if exc_type is None and exc_val is None and exc_tb is None:
             if self.expected_warning is not None:
-                if not any(issubclass(r.category, self.expected_warning) for r in self):
+                if not any(
+                        issubclass(r.category, self.expected_warning)
+                        for r in self):
                     __tracebackhide__ = True
-                    fail(
-                        "DID NOT WARN. No warnings of type {} was emitted. "
-                        "The list of emitted warnings is: {}.".format(
-                            self.expected_warning, [each.message for each in self]
-                        )
-                    )
+                    fail("DID NOT WARN. No warnings of type {} was emitted. "
+                         "The list of emitted warnings is: {}.".format(
+                             self.expected_warning,
+                             [each.message for each in self]))
                 elif self.match_expr is not None:
                     for r in self:
                         if issubclass(r.category, self.expected_warning):
-                            if re.compile(self.match_expr).search(str(r.message)):
+                            if re.compile(self.match_expr).search(
+                                    str(r.message)):
                                 break
                     else:
                         fail(
@@ -288,5 +284,4 @@ class WarningsChecker(WarningsRecorder):
                                 self.expected_warning,
                                 self.match_expr,
                                 [each.message for each in self],
-                            )
-                        )
+                            ))

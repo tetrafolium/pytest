@@ -30,18 +30,19 @@ from _pytest.store import StoreKey
 if TYPE_CHECKING:
     from _pytest.nodes import Item
 
-
-__all__ = ["Mark", "MarkDecorator", "MarkGenerator", "get_empty_parameterset_mark"]
-
+__all__ = [
+    "Mark", "MarkDecorator", "MarkGenerator", "get_empty_parameterset_mark"
+]
 
 old_mark_config_key = StoreKey[Optional[Config]]()
 
 
 def param(
-    *values: object,
-    marks: "Union[MarkDecorator, typing.Collection[Union[MarkDecorator, Mark]]]" = (),
-    id: Optional[str] = None
-) -> ParameterSet:
+        *values: object,
+        marks:
+        "Union[MarkDecorator, typing.Collection[Union[MarkDecorator, Mark]]]" = (
+        ),
+        id: Optional[str] = None) -> ParameterSet:
     """Specify a parameter in `pytest.mark.parametrize`_ calls or
     :ref:`parametrized fixtures <fixture-parametrize-marks>`.
 
@@ -100,7 +101,8 @@ def pytest_addoption(parser: Parser) -> None:
     )
 
     parser.addini("markers", "markers for test functions", "linelist")
-    parser.addini(EMPTY_PARAMETERSET_OPTION, "default marker for empty parametersets")
+    parser.addini(EMPTY_PARAMETERSET_OPTION,
+                  "default marker for empty parametersets")
 
 
 @hookimpl(tryfirst=True)
@@ -193,14 +195,14 @@ def deselect_by_keyword(items: "List[Item]", config: Config) -> None:
     try:
         expression = Expression.compile(keywordexpr)
     except ParseError as e:
-        raise UsageError(
-            "Wrong expression passed to '-k': {}: {}".format(keywordexpr, e)
-        ) from None
+        raise UsageError("Wrong expression passed to '-k': {}: {}".format(
+            keywordexpr, e)) from None
 
     remaining = []
     deselected = []
     for colitem in items:
-        if keywordexpr and not expression.evaluate(KeywordMatcher.from_item(colitem)):
+        if keywordexpr and not expression.evaluate(
+                KeywordMatcher.from_item(colitem)):
             deselected.append(colitem)
         else:
             if selectuntil:
@@ -238,9 +240,8 @@ def deselect_by_mark(items: "List[Item]", config: Config) -> None:
     try:
         expression = Expression.compile(matchexpr)
     except ParseError as e:
-        raise UsageError(
-            "Wrong expression passed to '-m': {}: {}".format(matchexpr, e)
-        ) from None
+        raise UsageError("Wrong expression passed to '-m': {}: {}".format(
+            matchexpr, e)) from None
 
     remaining = []
     deselected = []
@@ -266,11 +267,11 @@ def pytest_configure(config: Config) -> None:
 
     empty_parameterset = config.getini(EMPTY_PARAMETERSET_OPTION)
 
-    if empty_parameterset not in ("skip", "xfail", "fail_at_collect", None, ""):
-        raise UsageError(
-            "{!s} must be one of skip, xfail or fail_at_collect"
-            " but it is {!r}".format(EMPTY_PARAMETERSET_OPTION, empty_parameterset)
-        )
+    if empty_parameterset not in ("skip", "xfail", "fail_at_collect", None,
+                                  ""):
+        raise UsageError("{!s} must be one of skip, xfail or fail_at_collect"
+                         " but it is {!r}".format(EMPTY_PARAMETERSET_OPTION,
+                                                  empty_parameterset))
 
 
 def pytest_unconfigure(config: Config) -> None:

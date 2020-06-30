@@ -36,9 +36,7 @@ else:
 
 __all__ = ["Path", "PurePath"]
 
-
 LOCK_TIMEOUT = 60 * 60 * 3
-
 
 _AnyPurePath = TypeVar("_AnyPurePath", bound=PurePath)
 
@@ -70,21 +68,16 @@ def on_rm_rf_error(func, path: str, exc, *, start_path: Path) -> bool:
 
     if not isinstance(excvalue, PermissionError):
         warnings.warn(
-            PytestWarning(
-                "(rm_rf) error removing {}\n{}: {}".format(path, exctype, excvalue)
-            )
-        )
+            PytestWarning("(rm_rf) error removing {}\n{}: {}".format(
+                path, exctype, excvalue)))
         return False
 
     if func not in (os.rmdir, os.remove, os.unlink):
-        if func not in (os.open,):
+        if func not in (os.open, ):
             warnings.warn(
                 PytestWarning(
-                    "(rm_rf) unknown function {} when removing {}:\n{}: {}".format(
-                        func, path, exctype, excvalue
-                    )
-                )
-            )
+                    "(rm_rf) unknown function {} when removing {}:\n{}: {}".
+                    format(func, path, exctype, excvalue)))
         return False
 
     # Chmod + retry.
@@ -181,9 +174,8 @@ def parse_num(maybe_num) -> int:
         return -1
 
 
-def _force_symlink(
-    root: Path, target: Union[str, PurePath], link_to: Union[str, Path]
-) -> None:
+def _force_symlink(root: Path, target: Union[str, PurePath],
+                   link_to: Union[str, Path]) -> None:
     """helper to create the current symlink
 
     it's full of race conditions that are reasonably ok to ignore
@@ -207,7 +199,8 @@ def make_numbered_dir(root: Path, prefix: str) -> Path:
     """create a directory with an increased number as suffix for the given prefix"""
     for i in range(10):
         # try up to 10 times to create the folder
-        max_existing = max(map(parse_num, find_suffixes(root, prefix)), default=-1)
+        max_existing = max(map(parse_num, find_suffixes(root, prefix)),
+                           default=-1)
         new_number = max_existing + 1
         new_path = root.joinpath("{}{}".format(prefix, new_number))
         try:
@@ -218,17 +211,17 @@ def make_numbered_dir(root: Path, prefix: str) -> Path:
             _force_symlink(root, prefix + "current", new_path)
             return new_path
     else:
-        raise OSError(
-            "could not create numbered dir with prefix "
-            "{prefix} in {root} after 10 tries".format(prefix=prefix, root=root)
-        )
+        raise OSError("could not create numbered dir with prefix "
+                      "{prefix} in {root} after 10 tries".format(prefix=prefix,
+                                                                 root=root))
 
 
 def create_cleanup_lock(p: Path) -> Path:
     """crates a lock to prevent premature folder cleanup"""
     lock_path = get_lock_path(p)
     try:
-        fd = os.open(str(lock_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
+        fd = os.open(str(lock_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                     0o644)
     except FileExistsError as e:
         raise OSError("cannot create lockfile in {path}".format(path=p)) from e
     else:
@@ -245,7 +238,8 @@ def register_cleanup_lock_removal(lock_path: Path, register=atexit.register):
     """registers a cleanup function for removing a lock, by default on atexit"""
     pid = os.getpid()
 
-    def cleanup_on_exit(lock_path: Path = lock_path, original_pid: int = pid) -> None:
+    def cleanup_on_exit(lock_path: Path = lock_path,
+                        original_pid: int = pid) -> None:
         current_pid = os.getpid()
         if current_pid != original_pid:
             # fork
@@ -285,7 +279,8 @@ def maybe_delete_a_numbered_dir(path: Path) -> None:
                 pass
 
 
-def ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) -> bool:
+def ensure_deletable(path: Path,
+                     consider_lock_dead_if_created_before: float) -> bool:
     """checks if a lock exists and breaks it if its considered dead"""
     if path.is_symlink():
         return False
@@ -308,7 +303,8 @@ def ensure_deletable(path: Path, consider_lock_dead_if_created_before: float) ->
         return False
 
 
-def try_cleanup(path: Path, consider_lock_dead_if_created_before: float) -> None:
+def try_cleanup(path: Path,
+                consider_lock_dead_if_created_before: float) -> None:
     """tries to cleanup a folder if we can ensure it's deletable"""
     if ensure_deletable(path, consider_lock_dead_if_created_before):
         maybe_delete_a_numbered_dir(path)
@@ -326,9 +322,8 @@ def cleanup_candidates(root: Path, prefix: str, keep: int) -> Iterator[Path]:
             yield path
 
 
-def cleanup_numbered_dir(
-    root: Path, prefix: str, keep: int, consider_lock_dead_if_created_before: float
-) -> None:
+def cleanup_numbered_dir(root: Path, prefix: str, keep: int,
+                         consider_lock_dead_if_created_before: float) -> None:
     """cleanup for lock driven numbered directories"""
     for path in cleanup_candidates(root, prefix, keep):
         try_cleanup(path, consider_lock_dead_if_created_before)
@@ -336,9 +331,8 @@ def cleanup_numbered_dir(
         try_cleanup(path, consider_lock_dead_if_created_before)
 
 
-def make_numbered_dir_with_cleanup(
-    root: Path, prefix: str, keep: int, lock_timeout: float
-) -> Path:
+def make_numbered_dir_with_cleanup(root: Path, prefix: str, keep: int,
+                                   lock_timeout: float) -> Path:
     """creates a numbered dir with a cleanup lock and removes old ones"""
     e = None
     for i in range(10):
@@ -349,7 +343,8 @@ def make_numbered_dir_with_cleanup(
         except Exception as exc:
             e = exc
         else:
-            consider_lock_dead_if_created_before = p.stat().st_mtime - lock_timeout
+            consider_lock_dead_if_created_before = p.stat(
+            ).st_mtime - lock_timeout
             # Register a cleanup for program exit
             atexit.register(
                 cleanup_numbered_dir,
@@ -411,7 +406,7 @@ def fnmatch_ex(pattern: str, path) -> bool:
 
 def parts(s: str) -> Set[str]:
     parts = s.split(sep)
-    return {sep.join(parts[: i + 1]) or sep for i in range(len(parts))}
+    return {sep.join(parts[:i + 1]) or sep for i in range(len(parts))}
 
 
 def symlink_or_skip(src, dst, **kwargs):
@@ -440,10 +435,9 @@ class ImportPathMismatchError(ImportError):
 
 
 def import_path(
-    p: Union[str, py.path.local, Path],
-    *,
-    mode: Union[str, ImportMode] = ImportMode.prepend
-) -> ModuleType:
+        p: Union[str, py.path.local, Path],
+        *,
+        mode: Union[str, ImportMode] = ImportMode.prepend) -> ModuleType:
     """
     Imports and returns a module from the given path, which can be a file (a module) or
     a directory (a package).
@@ -479,12 +473,12 @@ def import_path(
             if spec is not None:
                 break
         else:
-            spec = importlib.util.spec_from_file_location(module_name, str(path))
+            spec = importlib.util.spec_from_file_location(
+                module_name, str(path))
 
         if spec is None:
-            raise ImportError(
-                "Can't find module {} at location {}".format(module_name, str(path))
-            )
+            raise ImportError("Can't find module {} at location {}".format(
+                module_name, str(path)))
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)  # type: ignore[union-attr]
         return mod
@@ -524,7 +518,7 @@ def import_path(
         if module_file.endswith((".pyc", ".pyo")):
             module_file = module_file[:-1]
         if module_file.endswith(os.path.sep + "__init__.py"):
-            module_file = module_file[: -(len(os.path.sep + "__init__.py"))]
+            module_file = module_file[:-(len(os.path.sep + "__init__.py"))]
 
         try:
             is_same = os.path.samefile(str(path), module_file)
@@ -543,7 +537,7 @@ def resolve_package_path(path: Path) -> Optional[Path]:
     Return None if it can not be determined.
     """
     result = None
-    for parent in itertools.chain((path,), path.parents):
+    for parent in itertools.chain((path, ), path.parents):
         if parent.is_dir():
             if not parent.joinpath("__init__.py").is_file():
                 break

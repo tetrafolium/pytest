@@ -21,9 +21,8 @@ def pytest_addoption(parser: Parser) -> None:
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_fixture_setup(
-    fixturedef: FixtureDef, request: SubRequest
-) -> Optional[object]:
+def pytest_fixture_setup(fixturedef: FixtureDef,
+                         request: SubRequest) -> Optional[object]:
     # Will return a dummy fixture if the setuponly option is provided.
     if request.config.option.setupplan:
         my_cache_key = fixturedef.cache_key(request)

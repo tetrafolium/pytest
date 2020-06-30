@@ -28,9 +28,8 @@ def pytest_addoption(parser: Parser) -> None:
 
 
 @pytest.hookimpl(hookwrapper=True)
-def pytest_fixture_setup(
-    fixturedef: FixtureDef, request: SubRequest
-) -> Generator[None, None, None]:
+def pytest_fixture_setup(fixturedef: FixtureDef,
+                         request: SubRequest) -> Generator[None, None, None]:
     yield
     if request.config.option.setupshow:
         if hasattr(request, "param"):
@@ -65,13 +64,11 @@ def _show_fixture_action(fixturedef: FixtureDef, msg: str) -> None:
     tw = config.get_terminal_writer()
     tw.line()
     tw.write(" " * 2 * fixturedef.scopenum)
-    tw.write(
-        "{step} {scope} {fixture}".format(
-            step=msg.ljust(8),  # align the output to TEARDOWN
-            scope=fixturedef.scope[0].upper(),
-            fixture=fixturedef.argname,
-        )
-    )
+    tw.write("{step} {scope} {fixture}".format(
+        step=msg.ljust(8),  # align the output to TEARDOWN
+        scope=fixturedef.scope[0].upper(),
+        fixture=fixturedef.argname,
+    ))
 
     if msg == "SETUP":
         deps = sorted(arg for arg in fixturedef.argnames if arg != "request")
@@ -79,7 +76,9 @@ def _show_fixture_action(fixturedef: FixtureDef, msg: str) -> None:
             tw.write(" (fixtures used: {})".format(", ".join(deps)))
 
     if hasattr(fixturedef, "cached_param"):
-        tw.write("[{}]".format(saferepr(fixturedef.cached_param, maxsize=42)))  # type: ignore[attr-defined]
+        tw.write("[{}]".format(
+            saferepr(fixturedef.cached_param,
+                     maxsize=42)))  # type: ignore[attr-defined]
 
     tw.flush()
 

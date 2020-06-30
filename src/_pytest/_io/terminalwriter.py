@@ -8,7 +8,6 @@ from typing import TextIO
 
 from .wcwidth import wcswidth
 
-
 # This code was initially copied from py 1.8.1, file _io/terminalwriter.py.
 
 
@@ -27,12 +26,9 @@ def should_do_markup(file: TextIO) -> bool:
         return True
     if os.environ.get("PY_COLORS") == "0":
         return False
-    return (
-        hasattr(file, "isatty")
-        and file.isatty()
-        and os.environ.get("TERM") != "dumb"
-        and not (sys.platform.startswith("java") and os._name == "nt")
-    )
+    return (hasattr(file, "isatty") and file.isatty()
+            and os.environ.get("TERM") != "dumb"
+            and not (sys.platform.startswith("java") and os._name == "nt"))
 
 
 class TerminalWriter:
@@ -62,7 +58,8 @@ class TerminalWriter:
     def __init__(self, file: Optional[TextIO] = None) -> None:
         if file is None:
             file = sys.stdout
-        if hasattr(file, "isatty") and file.isatty() and sys.platform == "win32":
+        if hasattr(file,
+                   "isatty") and file.isatty() and sys.platform == "win32":
             try:
                 import colorama
             except ImportError:
@@ -98,16 +95,15 @@ class TerminalWriter:
         if self.hasmarkup:
             esc = [self._esctable[name] for name, on in markup.items() if on]
             if esc:
-                text = "".join("\x1b[%sm" % cod for cod in esc) + text + "\x1b[0m"
+                text = "".join("\x1b[%sm" % cod
+                               for cod in esc) + text + "\x1b[0m"
         return text
 
-    def sep(
-        self,
-        sepchar: str,
-        title: Optional[str] = None,
-        fullwidth: Optional[int] = None,
-        **markup: bool
-    ) -> None:
+    def sep(self,
+            sepchar: str,
+            title: Optional[str] = None,
+            fullwidth: Optional[int] = None,
+            **markup: bool) -> None:
         if fullwidth is None:
             fullwidth = self.fullwidth
         # the goal is to have the line be as long as possible
@@ -159,7 +155,8 @@ class TerminalWriter:
     def flush(self) -> None:
         self._file.flush()
 
-    def _write_source(self, lines: Sequence[str], indents: Sequence[str] = ()) -> None:
+    def _write_source(
+            self, lines: Sequence[str], indents: Sequence[str] = ()) -> None:
         """Write lines of source code possibly highlighted.
 
         Keeping this private for now because the API is clunky. We should discuss how
@@ -169,9 +166,7 @@ class TerminalWriter:
         if indents and len(indents) != len(lines):
             raise ValueError(
                 "indents size ({}) should have same size as lines ({})".format(
-                    len(indents), len(lines)
-                )
-            )
+                    len(indents), len(lines)))
         if not indents:
             indents = [""] * len(lines)
         source = "\n".join(lines)
@@ -190,7 +185,6 @@ class TerminalWriter:
         except ImportError:
             return source
         else:
-            highlighted = highlight(
-                source, PythonLexer(), TerminalFormatter(bg="dark")
-            )  # type: str
+            highlighted = highlight(source, PythonLexer(),
+                                    TerminalFormatter(bg="dark"))  # type: str
             return highlighted

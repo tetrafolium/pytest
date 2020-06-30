@@ -57,7 +57,8 @@ def load_config_dict_from_file(
         elif "pytest" in iniconfig.sections:
             # If a setup.cfg contains a "[pytest]" section, we raise a failure to indicate users that
             # plain "[pytest]" sections in setup.cfg files is no longer supported (#3086).
-            fail(CFG_PYTEST_SECTION.format(filename="setup.cfg"), pytrace=False)
+            fail(CFG_PYTEST_SECTION.format(filename="setup.cfg"),
+                 pytrace=False)
 
     # '.toml' files are considered if they contain a [tool.pytest.ini_options] table
     elif filepath.ext == ".toml":
@@ -65,7 +66,8 @@ def load_config_dict_from_file(
 
         config = toml.load(str(filepath))
 
-        result = config.get("tool", {}).get("pytest", {}).get("ini_options", None)
+        result = config.get("tool", {}).get("pytest",
+                                            {}).get("ini_options", None)
         if result is not None:
             # TOML supports richer data types than ini files (strings, arrays, floats, ints, etc),
             # however we need to convert all scalar values to str for compatibility with the rest
@@ -80,9 +82,8 @@ def load_config_dict_from_file(
 
 def locate_config(
     args: Iterable[Union[str, py.path.local]]
-) -> Tuple[
-    Optional[py.path.local], Optional[py.path.local], Dict[str, Union[str, List[str]]],
-]:
+) -> Tuple[Optional[py.path.local], Optional[py.path.local], Dict[str, Union[
+        str, List[str]]], ]:
     """
     Search in the list of arguments for a valid ini-file for pytest,
     and return a tuple of (rootdir, inifile, cfg-dict).
@@ -144,13 +145,12 @@ def get_dirs_from_args(args: Iterable[str]) -> List[py.path.local]:
         return py.path.local(path.dirname)
 
     # These look like paths but may not exist
-    possible_paths = (
-        py.path.local(get_file_part_from_node_id(arg))
-        for arg in args
-        if not is_option(arg)
-    )
+    possible_paths = (py.path.local(get_file_part_from_node_id(arg))
+                      for arg in args if not is_option(arg))
 
-    return [get_dir_from_path(path) for path in possible_paths if path.exists()]
+    return [
+        get_dir_from_path(path) for path in possible_paths if path.exists()
+    ]
 
 
 CFG_PYTEST_SECTION = "[pytest] section in {filename} files is no longer supported, change to [tool:pytest] instead."
@@ -161,7 +161,8 @@ def determine_setup(
     args: List[str],
     rootdir_cmd_arg: Optional[str] = None,
     config: Optional["Config"] = None,
-) -> Tuple[py.path.local, Optional[py.path.local], Dict[str, Union[str, List[str]]]]:
+) -> Tuple[py.path.local, Optional[py.path.local], Dict[str, Union[
+        str, List[str]]]]:
     rootdir = None
     dirs = get_dirs_from_args(args)
     if inifile:
@@ -194,9 +195,7 @@ def determine_setup(
         rootdir = py.path.local(os.path.expandvars(rootdir_cmd_arg))
         if not rootdir.isdir():
             raise UsageError(
-                "Directory '{}' not found. Check your '--rootdir' option.".format(
-                    rootdir
-                )
-            )
+                "Directory '{}' not found. Check your '--rootdir' option.".
+                format(rootdir))
     assert rootdir is not None
     return rootdir, inipath, inicfg or {}

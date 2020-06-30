@@ -34,8 +34,7 @@ def pytest_addoption(parser: Parser) -> None:
             "Control assertion debugging tools.\n"
             "'plain' performs no assertion debugging.\n"
             "'rewrite' (the default) rewrites assert statements in test modules"
-            " on import to provide assert expression information."
-        ),
+            " on import to provide assert expression information."),
     )
     parser.addini(
         "enable_assertion_pass_hook",
@@ -74,14 +73,12 @@ def register_assert_rewrite(*names: str) -> None:
 
 class DummyRewriteHook:
     """A no-op import hook for when rewriting is disabled."""
-
     def mark_rewrite(self, *names: str) -> None:
         pass
 
 
 class AssertionState:
     """State for the assertion plugin."""
-
     def __init__(self, config: Config, mode) -> None:
         self.mode = mode
         self.trace = config.trace.root.get("assertion")
@@ -91,7 +88,8 @@ class AssertionState:
 def install_importhook(config: Config) -> rewrite.AssertionRewritingHook:
     """Try to install the rewrite hook, raise SystemError if it fails."""
     config._store[assertstate_key] = AssertionState(config, "rewrite")
-    config._store[assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)
+    config._store[
+        assertstate_key].hook = hook = rewrite.AssertionRewritingHook(config)
     sys.meta_path.insert(0, hook)
     config._store[assertstate_key].trace("installed rewrite import hook")
 
@@ -141,9 +139,10 @@ def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:
         The result can be formatted by util.format_explanation() for
         pretty printing.
         """
-        hook_result = ihook.pytest_assertrepr_compare(
-            config=item.config, op=op, left=left, right=right
-        )
+        hook_result = ihook.pytest_assertrepr_compare(config=item.config,
+                                                      op=op,
+                                                      left=left,
+                                                      right=right)
         for new_expl in hook_result:
             if new_expl:
                 new_expl = truncate.truncate_if_required(new_expl, item)
@@ -159,8 +158,12 @@ def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:
 
     if ihook.pytest_assertion_pass.get_hookimpls():
 
-        def call_assertion_pass_hook(lineno: int, orig: str, expl: str) -> None:
-            ihook.pytest_assertion_pass(item=item, lineno=lineno, orig=orig, expl=expl)
+        def call_assertion_pass_hook(lineno: int, orig: str,
+                                     expl: str) -> None:
+            ihook.pytest_assertion_pass(item=item,
+                                        lineno=lineno,
+                                        orig=orig,
+                                        expl=expl)
 
         util._assertion_pass = call_assertion_pass_hook
 
@@ -176,7 +179,9 @@ def pytest_sessionfinish(session: "Session") -> None:
             assertstate.hook.set_session(None)
 
 
-def pytest_assertrepr_compare(
-    config: Config, op: str, left: Any, right: Any
-) -> Optional[List[str]]:
-    return util.assertrepr_compare(config=config, op=op, left=left, right=right)
+def pytest_assertrepr_compare(config: Config, op: str, left: Any,
+                              right: Any) -> Optional[List[str]]:
+    return util.assertrepr_compare(config=config,
+                                   op=op,
+                                   left=left,
+                                   right=right)

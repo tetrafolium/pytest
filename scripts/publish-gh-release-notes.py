@@ -61,9 +61,10 @@ def parse_changelog(tag_name):
 
 
 def convert_rst_to_md(text):
-    return pypandoc.convert_text(
-        text, "md", format="rst", extra_args=["--wrap=preserve"]
-    )
+    return pypandoc.convert_text(text,
+                                 "md",
+                                 format="rst",
+                                 extra_args=["--wrap=preserve"])
 
 
 def main(argv):
@@ -72,7 +73,8 @@ def main(argv):
     else:
         tag_name = os.environ.get("GITHUB_REF")
         if not tag_name:
-            print("tag_name not given and $GITHUB_REF not set", file=sys.stderr)
+            print("tag_name not given and $GITHUB_REF not set",
+                  file=sys.stderr)
             return 1
         if tag_name.startswith("refs/tags/"):
             tag_name = tag_name[len("refs/tags/"):]
