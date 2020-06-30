@@ -552,7 +552,7 @@ class ExceptionInfo(Generic[_E]):
         text = text.rstrip()
         if tryshort:
             if text.startswith(self._striptext):
-                text = text[len(self._striptext) :]
+                text = text[len(self._striptext):]
         return text
 
     def errisinstance(
@@ -708,7 +708,7 @@ class FormattedExcinfo:
             for line in source.lines[:line_index]:
                 lines.append(space_prefix + line)
             lines.append(self.flow_marker + "   " + source.lines[line_index])
-            for line in source.lines[line_index + 1 :]:
+            for line in source.lines[line_index + 1:]:
                 lines.append(space_prefix + line)
         if excinfo is not None:
             indent = 4 if short else self._getindent(source)

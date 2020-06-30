@@ -1434,7 +1434,7 @@ class LineMatcher:
         """
         for i, line in enumerate(self.lines):
             if fnline == line or fnmatch(line, fnline):
-                return self.lines[i + 1 :]
+                return self.lines[i + 1:]
         raise ValueError("line %r not found in output" % fnline)
 
     def _log(self, *args) -> None:

@@ -47,6 +47,8 @@ _S = TypeVar("_S")
 # https://www.python.org/dev/peps/pep-0484/#support-for-singleton-types-in-unions
 class NotSetType(enum.Enum):
     token = 0
+
+
 NOTSET = NotSetType.token  # type: Final # noqa: E305
 # fmt: on
 
@@ -196,7 +198,7 @@ def getfuncargnames(
         arg_names = arg_names[1:]
     # Remove any names that will be replaced with mocks.
     if hasattr(function, "__wrapped__"):
-        arg_names = arg_names[num_mock_patch_args(function) :]
+        arg_names = arg_names[num_mock_patch_args(function):]
     return arg_names
 
 

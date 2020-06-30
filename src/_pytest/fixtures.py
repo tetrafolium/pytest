@@ -1517,7 +1517,7 @@ class FixtureManager:
             if nodeid.startswith(baseid):
                 if baseid:
                     i = len(baseid)
-                    nextchar = nodeid[i : i + 1]
+                    nextchar = nodeid[i: i + 1]
                     if nextchar and nextchar not in ":/":
                         continue
                 autousenames.extend(basenames)
