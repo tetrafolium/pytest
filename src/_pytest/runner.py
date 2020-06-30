@@ -419,7 +419,7 @@ class SetupState:
                 raise exc
 
         needed_collectors = colitem.listchain()
-        for col in needed_collectors[len(self.stack) :]:
+        for col in needed_collectors[len(self.stack):]:
             self.stack.append(col)
             try:
                 col.setup()

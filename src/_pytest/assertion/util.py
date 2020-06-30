@@ -311,8 +311,8 @@ def _compare_eq_sequence(
                 # 102
                 # >>> s[0:1]
                 # b'f'
-                left_value = left[i : i + 1]
-                right_value = right[i : i + 1]
+                left_value = left[i: i + 1]
+                right_value = right[i: i + 1]
             else:
                 left_value = left[i]
                 right_value = right[i]
@@ -453,7 +453,7 @@ def _compare_eq_cls(
 def _notin_text(term: str, text: str, verbose: int = 0) -> List[str]:
     index = text.find(term)
     head = text[:index]
-    tail = text[index + len(term) :]
+    tail = text[index + len(term):]
     correct_text = head + tail
     diff = _diff_text(text, correct_text, verbose)
     newdiff = ["%s is contained here:" % saferepr(term, maxsize=42)]

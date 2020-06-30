@@ -178,7 +178,7 @@ class MatcherAdapter(Mapping[str, bool]):
         self.matcher = matcher
 
     def __getitem__(self, key: str) -> bool:
-        return self.matcher(key[len(IDENT_PREFIX) :])
+        return self.matcher(key[len(IDENT_PREFIX):])
 
     def __iter__(self) -> Iterator[str]:
         raise NotImplementedError()

@@ -344,7 +344,7 @@ class DoctestItem(pytest.Item):
                         for (i, x) in enumerate(lines)
                     ]
                     # trim docstring error lines to 10
-                    lines = lines[max(example.lineno - 9, 0) : example.lineno + 1]
+                    lines = lines[max(example.lineno - 9, 0): example.lineno + 1]
                 else:
                     lines = [
                         "EXAMPLE LOCATION UNKNOWN, not showing all tests of that example"
@@ -662,7 +662,7 @@ def _init_checker_class() -> "Type[doctest.OutputChecker]":
                     # got with the text we want, so that it will match when we
                     # check the string literally.
                     got = (
-                        got[: g.start() + offset] + w.group() + got[g.end() + offset :]
+                        got[: g.start() + offset] + w.group() + got[g.end() + offset:]
                     )
                     offset += w.end() - w.start() - (g.end() - g.start())
             return got
