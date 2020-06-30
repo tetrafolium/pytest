@@ -6,56 +6,56 @@ inspecode:
 
   autopep8:
     auto-fix: true
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 12 }
 
   cpd:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 0 }
 
   flake8:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 52 }
 
   fossology:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 17 }
 
   grep:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 27 }
 
   jscpd:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 1 }
 
   misspell:
     auto-fix: true
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 2 }
 
   nose2:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 44 }
 
   prospector:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 940 }
 
   pycodestyle:
     options:
       --max-line-length: 99
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 117 }
 
   pyflakes:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 206 }
 
   pylint:
     options:
       --errors-only:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 225 }
 
   pytest:
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 0 }
 
   #understand:
   #  thresholds: { num-issues: 999 }
 
   unused:
     options: [ --single-occurrence, --all-likelihoods ]
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 73 }
 
   yapf:
     auto-fix: true
-    thresholds: { num-issues: 999 }
+    thresholds: { num-issues: 66 }
