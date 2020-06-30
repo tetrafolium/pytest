@@ -1314,7 +1314,7 @@ def fixture(  # noqa: F811
             "Use only keyword arguments.".format(", ".join(duplicated_args)))
     if args:
         warnings.warn(FIXTURE_POSITIONAL_ARGUMENTS, stacklevel=2)
-    # End backward compatiblity.
+    # End backward compatibility.
 
     fixture_marker = FixtureFunctionMarker(
         scope=scope,
