@@ -278,7 +278,7 @@ class _NodeReporter:
     def finalize(self) -> None:
         data = self.to_xml().unicode(indent=0)
         self.__dict__.clear()
-        # Type ignored becuase mypy doesn't like overriding a method.
+        # Type ignored because mypy doesn't like overriding a method.
         # Also the return value doesn't match...
         self.to_xml = lambda: py.xml.raw(data)  # type: ignore # noqa: F821
 
