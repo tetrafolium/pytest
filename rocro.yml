@@ -42,6 +42,8 @@ inspecode:
     thresholds: { num-issues: 999 }
 
   pylint:
+    options:
+      --errors-only:
     thresholds: { num-issues: 999 }
 
   pytest:
