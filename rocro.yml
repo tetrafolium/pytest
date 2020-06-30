@@ -1,5 +1,9 @@
 inspecode:
 
+  global:
+    ignore:
+      - testing/
+
   autopep8:
     auto-fix: true
     thresholds: { num-issues: 999 }
@@ -30,6 +34,8 @@ inspecode:
     thresholds: { num-issues: 999 }
 
   pycodestyle:
+    options:
+      --max-line-length: 99
     thresholds: { num-issues: 999 }
 
   pyflakes:
