@@ -16,7 +16,8 @@ def pytest_addoption(parser: Parser) -> None:
         "--stepwise",
         action="store_true",
         dest="stepwise",
-        help="exit on test failure and continue from last failing test next time",
+        help=
+        "exit on test failure and continue from last failing test next time",
     )
     group.addoption(
         "--stepwise-skip",
@@ -46,9 +47,8 @@ class StepwisePlugin:
     def pytest_sessionstart(self, session: Session) -> None:
         self.session = session
 
-    def pytest_collection_modifyitems(
-        self, session: Session, config: Config, items: List[nodes.Item]
-    ) -> None:
+    def pytest_collection_modifyitems(self, session: Session, config: Config,
+                                      items: List[nodes.Item]) -> None:
         if not self.active:
             return
         if not self.lastfailed:
@@ -73,8 +73,7 @@ class StepwisePlugin:
             already_passed = []
         else:
             self.report_status = "skipping {} already passed items.".format(
-                len(already_passed)
-            )
+                len(already_passed))
 
         for item in already_passed:
             items.remove(item)
@@ -98,8 +97,7 @@ class StepwisePlugin:
                 self.lastfailed = report.nodeid
                 assert self.session is not None
                 self.session.shouldstop = (
-                    "Test failed, continuing from this test next run."
-                )
+                    "Test failed, continuing from this test next run.")
 
         else:
             # If the test was actually run and did pass.
@@ -109,7 +107,8 @@ class StepwisePlugin:
                     self.lastfailed = None
 
     def pytest_report_collectionfinish(self) -> Optional[str]:
-        if self.active and self.config.getoption("verbose") >= 0 and self.report_status:
+        if self.active and self.config.getoption(
+                "verbose") >= 0 and self.report_status:
             return "stepwise: %s" % self.report_status
         return None
 

@@ -10,15 +10,14 @@ from typing import Optional
 
 from _pytest.nodes import Item
 
-
 DEFAULT_MAX_LINES = 8
 DEFAULT_MAX_CHARS = 8 * 80
 USAGE_MSG = "use '-vv' to show"
 
 
-def truncate_if_required(
-    explanation: List[str], item: Item, max_length: Optional[int] = None
-) -> List[str]:
+def truncate_if_required(explanation: List[str],
+                         item: Item,
+                         max_length: Optional[int] = None) -> List[str]:
     """
     Truncate this assertion explanation if the given test item is eligible.
     """
@@ -42,9 +41,9 @@ def _running_on_ci() -> bool:
 
 
 def _truncate_explanation(
-    input_lines: List[str],
-    max_lines: Optional[int] = None,
-    max_chars: Optional[int] = None,
+        input_lines: List[str],
+        max_lines: Optional[int] = None,
+        max_chars: Optional[int] = None,
 ) -> List[str]:
     """
     Truncate given list of strings that makes up the assertion explanation.
@@ -66,7 +65,8 @@ def _truncate_explanation(
     # Truncate first to max_lines, and then truncate to max_chars if max_chars
     # is exceeded.
     truncated_explanation = input_lines[:max_lines]
-    truncated_explanation = _truncate_by_char_count(truncated_explanation, max_chars)
+    truncated_explanation = _truncate_by_char_count(truncated_explanation,
+                                                    max_chars)
 
     # Add ellipsis to final line
     truncated_explanation[-1] = truncated_explanation[-1] + "..."
@@ -84,7 +84,8 @@ def _truncate_explanation(
     return truncated_explanation
 
 
-def _truncate_by_char_count(input_lines: List[str], max_chars: int) -> List[str]:
+def _truncate_by_char_count(input_lines: List[str],
+                            max_chars: int) -> List[str]:
     # Check if truncation required
     if len("".join(input_lines)) <= max_chars:
         return input_lines

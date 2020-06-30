@@ -30,8 +30,8 @@ def _validate_usepdb_cls(value: str) -> Tuple[str, str]:
         modname, classname = value.split(":")
     except ValueError as e:
         raise argparse.ArgumentTypeError(
-            "{!r} is not in the format 'modname:classname'".format(value)
-        ) from e
+            "{!r} is not in the format 'modname:classname'".format(
+                value)) from e
     return (modname, classname)
 
 
@@ -41,7 +41,8 @@ def pytest_addoption(parser: Parser) -> None:
         "--pdb",
         dest="usepdb",
         action="store_true",
-        help="start the interactive Python debugger on errors or KeyboardInterrupt.",
+        help=
+        "start the interactive Python debugger on errors or KeyboardInterrupt.",
     )
     group._addoption(
         "--pdbcls",
@@ -68,8 +69,7 @@ def pytest_configure(config: Config) -> None:
         config.pluginmanager.register(PdbInvoke(), "pdbinvoke")
 
     pytestPDB._saved.append(
-        (pdb.set_trace, pytestPDB._pluginmanager, pytestPDB._config)
-    )
+        (pdb.set_trace, pytestPDB._pluginmanager, pytestPDB._config))
     pdb.set_trace = pytestPDB.set_trace
     pytestPDB._pluginmanager = config.pluginmanager
     pytestPDB._config = config
@@ -128,9 +128,8 @@ class pytestPDB:
                     pdb_cls = getattr(pdb_cls, part)
             except Exception as exc:
                 value = ":".join((modname, classname))
-                raise UsageError(
-                    "--pdbcls: could not import {!r}: {}".format(value, exc)
-                ) from exc
+                raise UsageError("--pdbcls: could not import {!r}: {}".format(
+                    value, exc)) from exc
         else:
             import pdb
 
@@ -146,7 +145,8 @@ class pytestPDB:
 
         # Type ignored because mypy doesn't support "dynamic"
         # inheritance like this.
-        class PytestPdbWrapper(pdb_cls):  # type: ignore[valid-type,misc] # noqa: F821
+        class PytestPdbWrapper(pdb_cls
+                               ):  # type: ignore[valid-type,misc] # noqa: F821
             _pytest_capman = capman
             _continued = False
 
@@ -170,13 +170,14 @@ class pytestPDB:
                         else:
                             tw.sep(
                                 ">",
-                                "PDB continue (IO-capturing resumed for %s)"
-                                % capturing,
+                                "PDB continue (IO-capturing resumed for %s)" %
+                                capturing,
                             )
                         capman.resume()
                     else:
                         tw.sep(">", "PDB continue")
-                cls._pluginmanager.hook.pytest_leave_pdb(config=cls._config, pdb=self)
+                cls._pluginmanager.hook.pytest_leave_pdb(config=cls._config,
+                                                         pdb=self)
                 self._continued = True
                 return ret
 
@@ -218,7 +219,8 @@ class pytestPDB:
                 if f is None:
                     # Find last non-hidden frame.
                     i = max(0, len(stack) - 1)
-                    while i and stack[i][0].f_locals.get("__tracebackhide__", False):
+                    while i and stack[i][0].f_locals.get(
+                            "__tracebackhide__", False):
                         i -= 1
                 return stack, i
 
@@ -248,12 +250,14 @@ class pytestPDB:
                 else:
                     capturing = cls._is_capturing(capman)
                     if capturing == "global":
-                        tw.sep(">", "PDB {} (IO-capturing turned off)".format(method))
+                        tw.sep(
+                            ">",
+                            "PDB {} (IO-capturing turned off)".format(method))
                     elif capturing:
                         tw.sep(
                             ">",
-                            "PDB %s (IO-capturing turned off for %s)"
-                            % (method, capturing),
+                            "PDB %s (IO-capturing turned off for %s)" %
+                            (method, capturing),
                         )
                     else:
                         tw.sep(">", "PDB {}".format(method))
@@ -261,7 +265,8 @@ class pytestPDB:
         _pdb = cls._import_pdb_cls(capman)(**kwargs)
 
         if cls._pluginmanager:
-            cls._pluginmanager.hook.pytest_enter_pdb(config=cls._config, pdb=_pdb)
+            cls._pluginmanager.hook.pytest_enter_pdb(config=cls._config,
+                                                     pdb=_pdb)
         return _pdb
 
     @classmethod
@@ -273,9 +278,8 @@ class pytestPDB:
 
 
 class PdbInvoke:
-    def pytest_exception_interact(
-        self, node: Node, call: "CallInfo", report: BaseReport
-    ) -> None:
+    def pytest_exception_interact(self, node: Node, call: "CallInfo",
+                                  report: BaseReport) -> None:
         capman = node.config.pluginmanager.getplugin("capturemanager")
         if capman:
             capman.suspend_global_capture(in_=True)
@@ -285,7 +289,8 @@ class PdbInvoke:
         assert call.excinfo is not None
         _enter_pdb(node, call.excinfo, report)
 
-    def pytest_internalerror(self, excinfo: ExceptionInfo[BaseException]) -> None:
+    def pytest_internalerror(self,
+                             excinfo: ExceptionInfo[BaseException]) -> None:
         tb = _postmortem_traceback(excinfo)
         post_mortem(tb)
 
@@ -323,9 +328,8 @@ def maybe_wrap_pytest_function_for_tracing(pyfuncitem):
         wrap_pytest_function_for_tracing(pyfuncitem)
 
 
-def _enter_pdb(
-    node: Node, excinfo: ExceptionInfo[BaseException], rep: BaseReport
-) -> BaseReport:
+def _enter_pdb(node: Node, excinfo: ExceptionInfo[BaseException],
+               rep: BaseReport) -> BaseReport:
     # XXX we re-use the TerminalReporter's terminalwriter
     # because this seems to avoid some encoding related troubles
     # for not completely clear reasons.
@@ -354,7 +358,8 @@ def _enter_pdb(
     return rep
 
 
-def _postmortem_traceback(excinfo: ExceptionInfo[BaseException]) -> types.TracebackType:
+def _postmortem_traceback(
+        excinfo: ExceptionInfo[BaseException]) -> types.TracebackType:
     from doctest import UnexpectedException
 
     if isinstance(excinfo.value, UnexpectedException):

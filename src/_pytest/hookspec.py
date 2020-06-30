@@ -43,7 +43,6 @@ if TYPE_CHECKING:
     from _pytest.runner import CallInfo
     from _pytest.terminal import TerminalReporter
 
-
 hookspec = HookspecMarker("pytest")
 
 # -------------------------------------------------------------------------
@@ -65,9 +64,8 @@ def pytest_addhooks(pluginmanager: "PytestPluginManager") -> None:
 
 
 @hookspec(historic=True)
-def pytest_plugin_registered(
-    plugin: "_PluggyPlugin", manager: "PytestPluginManager"
-) -> None:
+def pytest_plugin_registered(plugin: "_PluggyPlugin",
+                             manager: "PytestPluginManager") -> None:
     """ a new pytest plugin got registered.
 
     :param plugin: the plugin module or instance
@@ -79,7 +77,8 @@ def pytest_plugin_registered(
 
 
 @hookspec(historic=True)
-def pytest_addoption(parser: "Parser", pluginmanager: "PytestPluginManager") -> None:
+def pytest_addoption(parser: "Parser",
+                     pluginmanager: "PytestPluginManager") -> None:
     """register argparse-style options and ini-style config values,
     called once at the beginning of a test run.
 
@@ -141,9 +140,8 @@ def pytest_configure(config: "Config") -> None:
 
 
 @hookspec(firstresult=True)
-def pytest_cmdline_parse(
-    pluginmanager: "PytestPluginManager", args: List[str]
-) -> Optional["Config"]:
+def pytest_cmdline_parse(pluginmanager: "PytestPluginManager",
+                         args: List[str]) -> Optional["Config"]:
     """return initialized config object, parsing the specified args.
 
     Stops at first non-None result, see :ref:`firstresult`
@@ -185,9 +183,8 @@ def pytest_cmdline_main(config: "Config") -> Optional[Union["ExitCode", int]]:
     """
 
 
-def pytest_load_initial_conftests(
-    early_config: "Config", parser: "Parser", args: List[str]
-) -> None:
+def pytest_load_initial_conftests(early_config: "Config", parser: "Parser",
+                                  args: List[str]) -> None:
     """ implements the loading of initial conftest files ahead
     of command line option parsing.
 
@@ -230,9 +227,8 @@ def pytest_collection(session: "Session") -> Optional[object]:
     """
 
 
-def pytest_collection_modifyitems(
-    session: "Session", config: "Config", items: List["Item"]
-) -> None:
+def pytest_collection_modifyitems(session: "Session", config: "Config",
+                                  items: List["Item"]) -> None:
     """ called after collection has been performed, may filter or re-order
     the items in-place.
 
@@ -250,7 +246,8 @@ def pytest_collection_finish(session: "Session") -> None:
 
 
 @hookspec(firstresult=True)
-def pytest_ignore_collect(path: py.path.local, config: "Config") -> Optional[bool]:
+def pytest_ignore_collect(path: py.path.local,
+                          config: "Config") -> Optional[bool]:
     """Return True to prevent considering this path for collection.
 
     This hook is consulted for all files and directories prior to calling
@@ -302,7 +299,8 @@ def pytest_deselected(items: Sequence["Item"]) -> None:
 
 
 @hookspec(firstresult=True)
-def pytest_make_collect_report(collector: "Collector") -> "Optional[CollectReport]":
+def pytest_make_collect_report(
+        collector: "Collector") -> "Optional[CollectReport]":
     """ perform ``collector.collect()`` and return a CollectReport.
 
     Stops at first non-None result, see :ref:`firstresult` """
@@ -314,7 +312,8 @@ def pytest_make_collect_report(collector: "Collector") -> "Optional[CollectRepor
 
 
 @hookspec(firstresult=True)
-def pytest_pycollect_makemodule(path: py.path.local, parent) -> Optional["Module"]:
+def pytest_pycollect_makemodule(path: py.path.local,
+                                parent) -> Optional["Module"]:
     """Return a Module collector or None for the given path.
 
     This hook will be called for each matching test module path.
@@ -349,9 +348,8 @@ def pytest_generate_tests(metafunc: "Metafunc") -> None:
 
 
 @hookspec(firstresult=True)
-def pytest_make_parametrize_id(
-    config: "Config", val: object, argname: str
-) -> Optional[str]:
+def pytest_make_parametrize_id(config: "Config", val: object,
+                               argname: str) -> Optional[str]:
     """Return a user-friendly string representation of the given ``val`` that will be used
     by @pytest.mark.parametrize calls. Return None if the hook doesn't know about ``val``.
     The parameter name is available as ``argname``, if required.
@@ -391,9 +389,8 @@ def pytest_runtestloop(session: "Session") -> Optional[object]:
 
 
 @hookspec(firstresult=True)
-def pytest_runtest_protocol(
-    item: "Item", nextitem: "Optional[Item]"
-) -> Optional[object]:
+def pytest_runtest_protocol(item: "Item",
+                            nextitem: "Optional[Item]") -> Optional[object]:
     """Performs the runtest protocol for a single test item.
 
     The default runtest protocol is this (see individual hooks for full details):
@@ -429,9 +426,8 @@ def pytest_runtest_protocol(
     """
 
 
-def pytest_runtest_logstart(
-    nodeid: str, location: Tuple[str, Optional[int], str]
-) -> None:
+def pytest_runtest_logstart(nodeid: str, location: Tuple[str, Optional[int],
+                                                         str]) -> None:
     """Called at the start of running the runtest protocol for a single item.
 
     See :func:`pytest_runtest_protocol` for a description of the runtest protocol.
@@ -441,9 +437,8 @@ def pytest_runtest_logstart(
     """
 
 
-def pytest_runtest_logfinish(
-    nodeid: str, location: Tuple[str, Optional[int], str]
-) -> None:
+def pytest_runtest_logfinish(nodeid: str, location: Tuple[str, Optional[int],
+                                                          str]) -> None:
     """Called at the end of running the runtest protocol for a single item.
 
     See :func:`pytest_runtest_protocol` for a description of the runtest protocol.
@@ -487,8 +482,7 @@ def pytest_runtest_teardown(item: "Item", nextitem: Optional["Item"]) -> None:
 
 @hookspec(firstresult=True)
 def pytest_runtest_makereport(
-    item: "Item", call: "CallInfo[None]"
-) -> Optional["TestReport"]:
+        item: "Item", call: "CallInfo[None]") -> Optional["TestReport"]:
     """Called to create a :py:class:`_pytest.reports.TestReport` for each of
     the setup, call and teardown runtest phases of a test item.
 
@@ -510,7 +504,8 @@ def pytest_runtest_logreport(report: "TestReport") -> None:
 
 @hookspec(firstresult=True)
 def pytest_report_to_serializable(
-    config: "Config", report: Union["CollectReport", "TestReport"],
+    config: "Config",
+    report: Union["CollectReport", "TestReport"],
 ) -> Optional[Dict[str, Any]]:
     """
     Serializes the given report object into a data structure suitable for sending
@@ -520,7 +515,8 @@ def pytest_report_to_serializable(
 
 @hookspec(firstresult=True)
 def pytest_report_from_serializable(
-    config: "Config", data: Dict[str, Any],
+    config: "Config",
+    data: Dict[str, Any],
 ) -> Optional[Union["CollectReport", "TestReport"]]:
     """
     Restores a report object previously serialized with pytest_report_to_serializable().
@@ -533,9 +529,8 @@ def pytest_report_from_serializable(
 
 
 @hookspec(firstresult=True)
-def pytest_fixture_setup(
-    fixturedef: "FixtureDef", request: "SubRequest"
-) -> Optional[object]:
+def pytest_fixture_setup(fixturedef: "FixtureDef",
+                         request: "SubRequest") -> Optional[object]:
     """Performs fixture setup execution.
 
     :return: The return value of the call to the fixture function.
@@ -549,9 +544,8 @@ def pytest_fixture_setup(
     """
 
 
-def pytest_fixture_post_finalizer(
-    fixturedef: "FixtureDef", request: "SubRequest"
-) -> None:
+def pytest_fixture_post_finalizer(fixturedef: "FixtureDef",
+                                  request: "SubRequest") -> None:
     """Called after fixture teardown, but before the cache is cleared, so
     the fixture result ``fixturedef.cached_result`` is still available (not
     ``None``)."""
@@ -571,7 +565,8 @@ def pytest_sessionstart(session: "Session") -> None:
 
 
 def pytest_sessionfinish(
-    session: "Session", exitstatus: Union[int, "ExitCode"],
+        session: "Session",
+        exitstatus: Union[int, "ExitCode"],
 ) -> None:
     """Called after whole test run finished, right before returning the exit status to the system.
 
@@ -592,9 +587,8 @@ def pytest_unconfigure(config: "Config") -> None:
 # -------------------------------------------------------------------------
 
 
-def pytest_assertrepr_compare(
-    config: "Config", op: str, left: object, right: object
-) -> Optional[List[str]]:
+def pytest_assertrepr_compare(config: "Config", op: str, left: object,
+                              right: object) -> Optional[List[str]]:
     """Return explanation for comparisons in failing assert expressions.
 
     Return None for no custom explanation, otherwise return a list
@@ -606,7 +600,8 @@ def pytest_assertrepr_compare(
     """
 
 
-def pytest_assertion_pass(item: "Item", lineno: int, orig: str, expl: str) -> None:
+def pytest_assertion_pass(item: "Item", lineno: int, orig: str,
+                          expl: str) -> None:
     """
     **(Experimental)**
 
@@ -649,9 +644,8 @@ def pytest_assertion_pass(item: "Item", lineno: int, orig: str, expl: str) -> No
 # -------------------------------------------------------------------------
 
 
-def pytest_report_header(
-    config: "Config", startdir: py.path.local
-) -> Union[str, List[str]]:
+def pytest_report_header(config: "Config",
+                         startdir: py.path.local) -> Union[str, List[str]]:
     """ return a string or list of strings to be displayed as header info for terminal reporting.
 
     :param _pytest.config.Config config: pytest config object
@@ -673,7 +667,9 @@ def pytest_report_header(
 
 
 def pytest_report_collectionfinish(
-    config: "Config", startdir: py.path.local, items: Sequence["Item"],
+        config: "Config",
+        startdir: py.path.local,
+        items: Sequence["Item"],
 ) -> Union[str, List[str]]:
     """
     .. versionadded:: 3.2
@@ -697,10 +693,8 @@ def pytest_report_collectionfinish(
 
 @hookspec(firstresult=True)
 def pytest_report_teststatus(
-    report: Union["CollectReport", "TestReport"], config: "Config"
-) -> Tuple[
-    str, str, Union[str, Mapping[str, bool]],
-]:
+        report: Union["CollectReport", "TestReport"],
+        config: "Config") -> Tuple[str, str, Union[str, Mapping[str, bool]], ]:
     """Return result-category, shortletter and verbose word for status
     reporting.
 
@@ -725,7 +719,9 @@ def pytest_report_teststatus(
 
 
 def pytest_terminal_summary(
-    terminalreporter: "TerminalReporter", exitstatus: "ExitCode", config: "Config",
+        terminalreporter: "TerminalReporter",
+        exitstatus: "ExitCode",
+        config: "Config",
 ) -> None:
     """Add a section to terminal summary reporting.
 
@@ -740,10 +736,10 @@ def pytest_terminal_summary(
 
 @hookspec(historic=True, warn_on_impl=WARNING_CAPTURED_HOOK)
 def pytest_warning_captured(
-    warning_message: "warnings.WarningMessage",
-    when: "Literal['config', 'collect', 'runtest']",
-    item: Optional["Item"],
-    location: Optional[Tuple[str, int, str]],
+        warning_message: "warnings.WarningMessage",
+        when: "Literal['config', 'collect', 'runtest']",
+        item: Optional["Item"],
+        location: Optional[Tuple[str, int, str]],
 ) -> None:
     """(**Deprecated**) Process a warning captured by the internal pytest warnings plugin.
 
@@ -775,10 +771,10 @@ def pytest_warning_captured(
 
 @hookspec(historic=True)
 def pytest_warning_recorded(
-    warning_message: "warnings.WarningMessage",
-    when: "Literal['config', 'collect', 'runtest']",
-    nodeid: str,
-    location: Optional[Tuple[str, int, str]],
+        warning_message: "warnings.WarningMessage",
+        when: "Literal['config', 'collect', 'runtest']",
+        nodeid: str,
+        location: Optional[Tuple[str, int, str]],
 ) -> None:
     """
     Process a warning captured by the internal pytest warnings plugin.
@@ -811,7 +807,8 @@ def pytest_warning_recorded(
 
 
 def pytest_internalerror(
-    excrepr: "ExceptionRepr", excinfo: "ExceptionInfo[BaseException]",
+        excrepr: "ExceptionRepr",
+        excinfo: "ExceptionInfo[BaseException]",
 ) -> Optional[bool]:
     """Called for internal errors.
 
@@ -821,15 +818,14 @@ def pytest_internalerror(
 
 
 def pytest_keyboard_interrupt(
-    excinfo: "ExceptionInfo[Union[KeyboardInterrupt, Exit]]",
-) -> None:
+        excinfo: "ExceptionInfo[Union[KeyboardInterrupt, Exit]]", ) -> None:
     """ called for keyboard interrupt. """
 
 
 def pytest_exception_interact(
-    node: "Node",
-    call: "CallInfo[object]",
-    report: Union["CollectReport", "TestReport"],
+        node: "Node",
+        call: "CallInfo[object]",
+        report: Union["CollectReport", "TestReport"],
 ) -> None:
     """Called when an exception was raised which can potentially be
     interactively handled.

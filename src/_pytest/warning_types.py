@@ -58,10 +58,8 @@ class PytestExperimentalApiWarning(PytestWarning, FutureWarning):
     @classmethod
     def simple(cls, apiname: str) -> "PytestExperimentalApiWarning":
         return cls(
-            "{apiname} is an experimental api that may change over time".format(
-                apiname=apiname
-            )
-        )
+            "{apiname} is an experimental api that may change over time".
+            format(apiname=apiname))
 
 
 class PytestUnhandledCoroutineWarning(PytestWarning):
@@ -103,4 +101,5 @@ class UnformattedWarning(Generic[_W]):
         return self.category(self.template.format(**kwargs))
 
 
-PYTESTER_COPY_EXAMPLE = PytestExperimentalApiWarning.simple("testdir.copy_example")
+PYTESTER_COPY_EXAMPLE = PytestExperimentalApiWarning.simple(
+    "testdir.copy_example")

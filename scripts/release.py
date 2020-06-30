@@ -19,29 +19,26 @@ def announce(version):
     last_version = stdout.strip()
 
     stdout = check_output(
-        ["git", "log", "{}..HEAD".format(last_version), "--format=%aN"]
-    )
+        ["git", "log", "{}..HEAD".format(last_version), "--format=%aN"])
     stdout = stdout.decode("utf-8")
 
     contributors = set(stdout.splitlines())
 
-    template_name = (
-        "release.minor.rst" if version.endswith(".0") else "release.patch.rst"
-    )
-    template_text = (
-        Path(__file__).parent.joinpath(template_name).read_text(encoding="UTF-8")
-    )
+    template_name = ("release.minor.rst"
+                     if version.endswith(".0") else "release.patch.rst")
+    template_text = (Path(__file__).parent.joinpath(template_name).read_text(
+        encoding="UTF-8"))
 
-    contributors_text = (
-        "\n".join("* {}".format(name) for name in sorted(contributors)) + "\n"
-    )
-    text = template_text.format(version=version, contributors=contributors_text)
+    contributors_text = ("\n".join("* {}".format(name)
+                                   for name in sorted(contributors)) + "\n")
+    text = template_text.format(version=version,
+                                contributors=contributors_text)
 
     target = Path(__file__).parent.joinpath(
-        "../doc/en/announce/release-{}.rst".format(version)
-    )
+        "../doc/en/announce/release-{}.rst".format(version))
     target.write_text(text, encoding="UTF-8")
-    print(f"{Fore.CYAN}[generate.announce] {Fore.RESET}Generated {target.name}")
+    print(
+        f"{Fore.CYAN}[generate.announce] {Fore.RESET}Generated {target.name}")
 
     # Update index with the new release entry
     index_path = Path(__file__).parent.joinpath("../doc/en/announce/index.rst")
@@ -52,7 +49,8 @@ def announce(version):
             new_line = indent + target.stem
             if line != new_line:
                 lines.insert(index, new_line)
-                index_path.write_text("\n".join(lines) + "\n", encoding="UTF-8")
+                index_path.write_text("\n".join(lines) + "\n",
+                                      encoding="UTF-8")
                 print(
                     f"{Fore.CYAN}[generate.announce] {Fore.RESET}Updated {index_path.name}"
                 )
@@ -115,7 +113,9 @@ def main():
     init(autoreset=True)
     parser = argparse.ArgumentParser()
     parser.add_argument("version", help="Release version")
-    parser.add_argument("--skip-check-links", action="store_true", default=False)
+    parser.add_argument("--skip-check-links",
+                        action="store_true",
+                        default=False)
     options = parser.parse_args()
     pre_release(options.version, skip_check_links=options.skip_check_links)
 

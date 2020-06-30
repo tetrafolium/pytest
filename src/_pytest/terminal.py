@@ -52,7 +52,6 @@ if TYPE_CHECKING:
 
     from _pytest.main import Session
 
-
 REPORT_COLLECTING_RESOLUTION = 0.5
 
 KNOWN_TYPES = (
@@ -76,14 +75,13 @@ class MoreQuietAction(argparse.Action):
 
     used to unify verbosity handling
     """
-
     def __init__(
-        self,
-        option_strings: Sequence[str],
-        dest: str,
-        default: object = None,
-        required: bool = False,
-        help: Optional[str] = None,
+            self,
+            option_strings: Sequence[str],
+            dest: str,
+            default: object = None,
+            required: bool = False,
+            help: Optional[str] = None,
     ) -> None:
         super().__init__(
             option_strings=option_strings,
@@ -95,11 +93,11 @@ class MoreQuietAction(argparse.Action):
         )
 
     def __call__(
-        self,
-        parser: argparse.ArgumentParser,
-        namespace: argparse.Namespace,
-        values: Union[str, Sequence[object], None],
-        option_string: Optional[str] = None,
+            self,
+            parser: argparse.ArgumentParser,
+            namespace: argparse.Namespace,
+            values: Union[str, Sequence[object], None],
+            option_string: Optional[str] = None,
     ) -> None:
         new_count = getattr(namespace, self.dest, 0) - 1
         setattr(namespace, self.dest, new_count)
@@ -212,12 +210,14 @@ def pytest_addoption(parser: Parser) -> None:
         "--code-highlight",
         default="yes",
         choices=["yes", "no"],
-        help="Whether code should be highlighted (only if --color is also enabled)",
+        help=
+        "Whether code should be highlighted (only if --color is also enabled)",
     )
 
     parser.addini(
         "console_output_style",
-        help='console output: "classic", or with additional progress information ("progress" (percentage) | "count").',
+        help=
+        'console output: "classic", or with additional progress information ("progress" (percentage) | "count").',
         default="progress",
     )
 
@@ -288,9 +288,8 @@ class WarningReport:
 
     message = attr.ib(type=str)
     nodeid = attr.ib(type=Optional[str], default=None)
-    fslocation = attr.ib(
-        type=Optional[Union[Tuple[str, int], py.path.local]], default=None
-    )
+    fslocation = attr.ib(type=Optional[Union[Tuple[str, int], py.path.local]],
+                         default=None)
     count_towards_summary = True
 
     def get_location(self, config: Config) -> Optional[str]:
@@ -301,7 +300,8 @@ class WarningReport:
         if self.nodeid:
             return self.nodeid
         if self.fslocation:
-            if isinstance(self.fslocation, tuple) and len(self.fslocation) >= 2:
+            if isinstance(self.fslocation,
+                          tuple) and len(self.fslocation) >= 2:
                 filename, linenum = self.fslocation[:2]
                 relpath = py.path.local(filename).relto(config.invocation_dir)
                 if not relpath:
@@ -349,7 +349,8 @@ class TerminalReporter:
         warnings.warn(TERMINALWRITER_WRITER, stacklevel=2)
         self._tw = value
 
-    def _determine_show_progress_info(self) -> "Literal['progress', 'count', False]":
+    def _determine_show_progress_info(
+            self) -> "Literal['progress', 'count', False]":
         """Return True if we should display progress information based on the current config"""
         # do not show progress if we are not capturing output (#3038)
         if self.config.getoption("capture", "no") == "no":
@@ -427,7 +428,11 @@ class TerminalReporter:
             self._tw.line()
             self.currentfspath = None
 
-    def write(self, content: str, *, flush: bool = False, **markup: bool) -> None:
+    def write(self,
+              content: str,
+              *,
+              flush: bool = False,
+              **markup: bool) -> None:
         self._tw.write(content, flush=flush, **markup)
 
     def flush(self) -> None:
@@ -457,13 +462,11 @@ class TerminalReporter:
         line = str(line)
         self._tw.write("\r" + line + fill, **markup)
 
-    def write_sep(
-        self,
-        sep: str,
-        title: Optional[str] = None,
-        fullwidth: Optional[int] = None,
-        **markup: bool
-    ) -> None:
+    def write_sep(self,
+                  sep: str,
+                  title: Optional[str] = None,
+                  fullwidth: Optional[int] = None,
+                  **markup: bool) -> None:
         self.ensure_newline()
         self._tw.sep(sep, title, fullwidth, **markup)
 
@@ -485,16 +488,18 @@ class TerminalReporter:
         return True
 
     def pytest_warning_recorded(
-        self, warning_message: warnings.WarningMessage, nodeid: str,
+            self,
+            warning_message: warnings.WarningMessage,
+            nodeid: str,
     ) -> None:
         from _pytest.warnings import warning_record_to_str
 
         fslocation = warning_message.filename, warning_message.lineno
         message = warning_record_to_str(warning_message)
 
-        warning_report = WarningReport(
-            fslocation=fslocation, message=message, nodeid=nodeid
-        )
+        warning_report = WarningReport(fslocation=fslocation,
+                                       message=message,
+                                       nodeid=nodeid)
         self._add_stats("warnings", [warning_report])
 
     def pytest_plugin_registered(self, plugin: _PluggyPlugin) -> None:
@@ -509,8 +514,8 @@ class TerminalReporter:
         self._add_stats("deselected", items)
 
     def pytest_runtest_logstart(
-        self, nodeid: str, location: Tuple[str, Optional[int], str]
-    ) -> None:
+            self, nodeid: str, location: Tuple[str, Optional[int],
+                                               str]) -> None:
         # ensure that the path is printed before the
         # 1st test of a module starts running
         if self.showlongtestinfo:
@@ -525,8 +530,7 @@ class TerminalReporter:
         self._tests_ran = True
         rep = report
         res = self.config.hook.pytest_report_teststatus(
-            report=rep, config=self.config
-        )  # type: Tuple[str, str, str]
+            report=rep, config=self.config)  # type: Tuple[str, str, str]
         category, letter, word = res
         if isinstance(word, tuple):
             word, markup = word
@@ -562,9 +566,9 @@ class TerminalReporter:
                 self.ensure_newline()
                 self._tw.write("[%s]" % rep.node.gateway.id)
                 if self._show_progress_info:
-                    self._tw.write(
-                        self._get_progress_information_message() + " ", cyan=True
-                    )
+                    self._tw.write(self._get_progress_information_message() +
+                                   " ",
+                                   cyan=True)
                 else:
                     self._tw.write(" ")
                 self._tw.write(word, **markup)
@@ -575,14 +579,16 @@ class TerminalReporter:
     @property
     def _is_last_item(self) -> bool:
         assert self._session is not None
-        return len(self._progress_nodeids_reported) == self._session.testscollected
+        return len(
+            self._progress_nodeids_reported) == self._session.testscollected
 
     def pytest_runtest_logfinish(self, nodeid: str) -> None:
         assert self._session
         if self.verbosity <= 0 and self._show_progress_info:
             if self._show_progress_info == "count":
                 num_tests = self._session.testscollected
-                progress_length = len(" [{}/{}]".format(str(num_tests), str(num_tests)))
+                progress_length = len(" [{}/{}]".format(
+                    str(num_tests), str(num_tests)))
             else:
                 progress_length = len(" [100%]")
 
@@ -611,8 +617,7 @@ class TerminalReporter:
         else:
             if collected:
                 return " [{:3d}%]".format(
-                    len(self._progress_nodeids_reported) * 100 // collected
-                )
+                    len(self._progress_nodeids_reported) * 100 // collected)
             return " [100%]"
 
     def _write_progress_information_filling_space(self) -> None:
@@ -652,10 +657,9 @@ class TerminalReporter:
         if not final:
             # Only write "collecting" report every 0.5s.
             t = timing.time()
-            if (
-                self._collect_report_last_write is not None
-                and self._collect_report_last_write > t - REPORT_COLLECTING_RESOLUTION
-            ):
+            if (self._collect_report_last_write is not None
+                    and self._collect_report_last_write >
+                    t - REPORT_COLLECTING_RESOLUTION):
                 return
             self._collect_report_last_write = t
 
@@ -667,9 +671,8 @@ class TerminalReporter:
             line = "collected "
         else:
             line = "collecting "
-        line += (
-            str(self._numcollected) + " item" + ("" if self._numcollected == 1 else "s")
-        )
+        line += (str(self._numcollected) + " item" +
+                 ("" if self._numcollected == 1 else "s"))
         if errors:
             line += " / %d error%s" % (errors, "s" if errors != 1 else "")
         if deselected:
@@ -700,23 +703,17 @@ class TerminalReporter:
                 verinfo = ".".join(map(str, pypy_version_info[:3]))
                 msg += "[pypy-{}-{}]".format(verinfo, pypy_version_info[3])
             msg += ", pytest-{}, py-{}, pluggy-{}".format(
-                pytest.__version__, py.__version__, pluggy.__version__
-            )
-            if (
-                self.verbosity > 0
-                or self.config.option.debug
-                or getattr(self.config.option, "pastebin", None)
-            ):
+                pytest.__version__, py.__version__, pluggy.__version__)
+            if (self.verbosity > 0 or self.config.option.debug
+                    or getattr(self.config.option, "pastebin", None)):
                 msg += " -- " + str(sys.executable)
             self.write_line(msg)
             lines = self.config.hook.pytest_report_header(
-                config=self.config, startdir=self.startdir
-            )
+                config=self.config, startdir=self.startdir)
             self._write_report_lines_from_hooks(lines)
 
     def _write_report_lines_from_hooks(
-        self, lines: List[Union[str, List[str]]]
-    ) -> None:
+            self, lines: List[Union[str, List[str]]]) -> None:
         lines.reverse()
         for line in collapse(lines):
             self.write_line(line)
@@ -725,7 +722,8 @@ class TerminalReporter:
         line = "rootdir: %s" % config.rootdir
 
         if config.inifile:
-            line += ", configfile: " + config.rootdir.bestrelpath(config.inifile)
+            line += ", configfile: " + config.rootdir.bestrelpath(
+                config.inifile)
 
         testpaths = config.getini("testpaths")
         if testpaths and config.args == testpaths:
@@ -735,15 +733,15 @@ class TerminalReporter:
 
         plugininfo = config.pluginmanager.list_plugin_distinfo()
         if plugininfo:
-            result.append("plugins: %s" % ", ".join(_plugin_nameversions(plugininfo)))
+            result.append("plugins: %s" %
+                          ", ".join(_plugin_nameversions(plugininfo)))
         return result
 
     def pytest_collection_finish(self, session: "Session") -> None:
         self.report_collect(True)
 
         lines = self.config.hook.pytest_report_collectionfinish(
-            config=self.config, startdir=self.startdir, items=session.items
-        )
+            config=self.config, startdir=self.startdir, items=session.items)
         self._write_report_lines_from_hooks(lines)
 
         if self.config.getoption("collectonly"):
@@ -779,7 +777,7 @@ class TerminalReporter:
         for item in items:
             needed_collectors = item.listchain()[1:]  # strip root node
             while stack:
-                if stack == needed_collectors[: len(stack)]:
+                if stack == needed_collectors[:len(stack)]:
                     break
                 stack.pop()
             for col in needed_collectors[len(stack):]:
@@ -796,9 +794,8 @@ class TerminalReporter:
                             self._tw.line("{}{}".format(indent + "  ", line))
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_sessionfinish(
-        self, session: "Session", exitstatus: Union[int, ExitCode]
-    ):
+    def pytest_sessionfinish(self, session: "Session",
+                             exitstatus: Union[int, ExitCode]):
         outcome = yield
         outcome.get_result()
         self._tw.line("")
@@ -810,9 +807,9 @@ class TerminalReporter:
             ExitCode.NO_TESTS_COLLECTED,
         )
         if exitstatus in summary_exit_codes and not self.no_summary:
-            self.config.hook.pytest_terminal_summary(
-                terminalreporter=self, exitstatus=exitstatus, config=self.config
-            )
+            self.config.hook.pytest_terminal_summary(terminalreporter=self,
+                                                     exitstatus=exitstatus,
+                                                     config=self.config)
         if session.shouldfail:
             self.write_sep("!", str(session.shouldfail), red=True)
         if exitstatus == ExitCode.INTERRUPTED:
@@ -833,7 +830,8 @@ class TerminalReporter:
         # Display any extra warnings from teardown here (if any).
         self.summary_warnings()
 
-    def pytest_keyboard_interrupt(self, excinfo: ExceptionInfo[BaseException]) -> None:
+    def pytest_keyboard_interrupt(
+            self, excinfo: ExceptionInfo[BaseException]) -> None:
         self._keyboardinterrupt_memo = excinfo.getrepr(funcargs=True)
 
     def pytest_unconfigure(self) -> None:
@@ -860,9 +858,10 @@ class TerminalReporter:
         def mkrel(nodeid):
             line = self.config.cwd_relative_nodeid(nodeid)
             if domain and line.endswith(domain):
-                line = line[: -len(domain)]
+                line = line[:-len(domain)]
                 values = domain.split("[")
-                values[0] = values[0].replace(".", "::")  # don't replace '.' in params
+                values[0] = values[0].replace(
+                    ".", "::")  # don't replace '.' in params
                 line += "[".join(values)
             return line
 
@@ -871,8 +870,7 @@ class TerminalReporter:
         if fspath:
             res = mkrel(nodeid)
             if self.verbosity >= 2 and nodeid.split("::")[0] != fspath.replace(
-                "\\", nodes.SEP
-            ):
+                    "\\", nodes.SEP):
                 res += " <- " + self.startdir.bestrelpath(fspath)
         else:
             res = "[location]"
@@ -906,14 +904,14 @@ class TerminalReporter:
     def summary_warnings(self) -> None:
         if self.hasopt("w"):
             all_warnings = self.stats.get(
-                "warnings"
-            )  # type: Optional[List[WarningReport]]
+                "warnings")  # type: Optional[List[WarningReport]]
             if not all_warnings:
                 return
 
             final = self._already_displayed_warnings is not None
             if final:
-                warning_reports = all_warnings[self._already_displayed_warnings:]
+                warning_reports = all_warnings[self.
+                                               _already_displayed_warnings:]
             else:
                 warning_reports = all_warnings
             self._already_displayed_warnings = len(warning_reports)
@@ -924,7 +922,8 @@ class TerminalReporter:
                 order_preserving_dict()
             )  # type: Dict[str, List[WarningReport]]
             for wr in warning_reports:
-                reports_grouped_by_message.setdefault(wr.message, []).append(wr)
+                reports_grouped_by_message.setdefault(wr.message,
+                                                      []).append(wr)
 
             def collapsed_location_report(reports: List[WarningReport]) -> str:
                 locations = []
@@ -936,14 +935,15 @@ class TerminalReporter:
                 if len(locations) < 10:
                     return "\n".join(map(str, locations))
 
-                counts_by_filename = order_preserving_dict()  # type: Dict[str, int]
+                counts_by_filename = order_preserving_dict(
+                )  # type: Dict[str, int]
                 for loc in locations:
                     key = str(loc).split("::", 1)[0]
-                    counts_by_filename[key] = counts_by_filename.get(key, 0) + 1
+                    counts_by_filename[key] = counts_by_filename.get(key,
+                                                                     0) + 1
                 return "\n".join(
                     "{}: {} warning{}".format(k, v, "s" if v > 1 else "")
-                    for k, v in counts_by_filename.items()
-                )
+                    for k, v in counts_by_filename.items())
 
             title = "warnings summary (final)" if final else "warnings summary"
             self.write_sep("=", title, yellow=True, bold=False)
@@ -958,7 +958,8 @@ class TerminalReporter:
                     message = message.rstrip()
                 self._tw.line(message)
                 self._tw.line()
-            self._tw.line("-- Docs: https://docs.pytest.org/en/latest/warnings.html")
+            self._tw.line(
+                "-- Docs: https://docs.pytest.org/en/latest/warnings.html")
 
     def summary_passes(self) -> None:
         if self.config.option.tbstyle != "no":
@@ -977,8 +978,7 @@ class TerminalReporter:
     def _get_teardown_reports(self, nodeid: str) -> List[TestReport]:
         reports = self.getreports("")
         return [
-            report
-            for report in reports
+            report for report in reports
             if report.when == "teardown" and report.nodeid == nodeid
         ]
 
@@ -1114,7 +1114,8 @@ class TerminalReporter:
                 lines.append("{} {} {}".format(verbose_word, pos, reason))
 
         def show_skipped(lines: List[str]) -> None:
-            skipped = self.stats.get("skipped", [])  # type: List[CollectReport]
+            skipped = self.stats.get("skipped",
+                                     [])  # type: List[CollectReport]
             fskips = _folded_skips(self.startdir, skipped) if skipped else []
             if not fskips:
                 return
@@ -1123,12 +1124,11 @@ class TerminalReporter:
                 if reason.startswith("Skipped: "):
                     reason = reason[9:]
                 if lineno is not None:
-                    lines.append(
-                        "%s [%d] %s:%d: %s"
-                        % (verbose_word, num, fspath, lineno, reason)
-                    )
+                    lines.append("%s [%d] %s:%d: %s" %
+                                 (verbose_word, num, fspath, lineno, reason))
                 else:
-                    lines.append("%s [%d] %s: %s" % (verbose_word, num, fspath, reason))
+                    lines.append("%s [%d] %s: %s" %
+                                 (verbose_word, num, fspath, reason))
 
         REPORTCHAR_ACTIONS = {
             "x": show_xfailed,
@@ -1178,16 +1178,16 @@ class TerminalReporter:
         self._known_types = list(KNOWN_TYPES) + unknown_types
         self._main_color = self._determine_main_color(bool(unknown_types))
 
-    def build_summary_stats_line(self) -> Tuple[List[Tuple[str, Dict[str, bool]]], str]:
+    def build_summary_stats_line(
+            self) -> Tuple[List[Tuple[str, Dict[str, bool]]], str]:
         main_color, known_types = self._get_main_color()
 
         parts = []
         for key in known_types:
             reports = self.stats.get(key, None)
             if reports:
-                count = sum(
-                    1 for rep in reports if getattr(rep, "count_towards_summary", True)
-                )
+                count = sum(1 for rep in reports
+                            if getattr(rep, "count_towards_summary", True))
                 color = _color_for_type.get(key, _color_for_type_default)
                 markup = {color: True, "bold": color == main_color}
                 parts.append(("%d %s" % _make_plural(count, key), markup))
@@ -1203,9 +1203,8 @@ def _get_pos(config: Config, rep: BaseReport):
     return nodeid
 
 
-def _get_line_with_reprcrash_message(
-    config: Config, rep: BaseReport, termwidth: int
-) -> str:
+def _get_line_with_reprcrash_message(config: Config, rep: BaseReport,
+                                     termwidth: int) -> str:
     """Get summary line for a report, trying to add reprcrash message."""
     verbose_word = rep._get_verbose_word(config)
     pos = _get_pos(config, rep)
@@ -1243,7 +1242,8 @@ def _get_line_with_reprcrash_message(
 
 
 def _folded_skips(
-    startdir: py.path.local, skipped: Sequence[CollectReport],
+    startdir: py.path.local,
+    skipped: Sequence[CollectReport],
 ) -> List[Tuple[int, str, Optional[int], str]]:
     d = {}  # type: Dict[Tuple[str, Optional[int], str], List[CollectReport]]
     for event in skipped:
@@ -1256,12 +1256,10 @@ def _folded_skips(
         # folding reports with global pytestmark variable
         # this is workaround, because for now we cannot identify the scope of a skip marker
         # TODO: revisit after marks scope would be fixed
-        if (
-            event.when == "setup"
-            and "skip" in keywords
-            and "pytestmark" not in keywords
-        ):
-            key = (fspath, None, reason)  # type: Tuple[str, Optional[int], str]
+        if (event.when == "setup" and "skip" in keywords
+                and "pytestmark" not in keywords):
+            key = (fspath, None, reason
+                   )  # type: Tuple[str, Optional[int], str]
         else:
             key = (fspath, lineno, reason)
         d.setdefault(key, []).append(event)

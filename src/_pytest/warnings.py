@@ -21,9 +21,8 @@ if TYPE_CHECKING:
 
 
 @lru_cache(maxsize=50)
-def _parse_filter(
-    arg: str, *, escape: bool
-) -> "Tuple[str, str, Type[Warning], str, int]":
+def _parse_filter(arg: str, *,
+                  escape: bool) -> "Tuple[str, str, Type[Warning], str, int]":
     """Parse a warnings filter string.
 
     This is copied from warnings._setoption, but does not apply the filter,
@@ -31,14 +30,15 @@ def _parse_filter(
     """
     parts = arg.split(":")
     if len(parts) > 5:
-        raise warnings._OptionError("too many fields (max 5): {!r}".format(arg))
+        raise warnings._OptionError(
+            "too many fields (max 5): {!r}".format(arg))
     while len(parts) < 5:
         parts.append("")
     action_, message, category_, module, lineno_ = [s.strip() for s in parts]
-    action = warnings._getaction(action_)  # type: str # type: ignore[attr-defined]
+    action = warnings._getaction(
+        action_)  # type: str # type: ignore[attr-defined]
     category = warnings._getcategory(
-        category_
-    )  # type: Type[Warning] # type: ignore[attr-defined]
+        category_)  # type: Type[Warning] # type: ignore[attr-defined]
     if message and escape:
         message = re.escape(message)
     if module and escape:
@@ -49,7 +49,8 @@ def _parse_filter(
             if lineno < 0:
                 raise ValueError
         except (ValueError, OverflowError) as e:
-            raise warnings._OptionError("invalid lineno {!r}".format(lineno_)) from e
+            raise warnings._OptionError(
+                "invalid lineno {!r}".format(lineno_)) from e
     else:
         lineno = 0
     return (action, message, category, module, lineno)
@@ -82,10 +83,10 @@ def pytest_configure(config: Config) -> None:
 
 @contextmanager
 def catch_warnings_for_item(
-    config: Config,
-    ihook,
-    when: "Literal['config', 'collect', 'runtest']",
-    item: Optional[Item],
+        config: Config,
+        ihook,
+        when: "Literal['config', 'collect', 'runtest']",
+        item: Optional[Item],
 ) -> Generator[None, None, None]:
     """
     Context manager that catches warnings generated in the contained execution block.
@@ -103,7 +104,8 @@ def catch_warnings_for_item(
         if not sys.warnoptions:
             # if user is not explicitly configuring warning filters, show deprecation warnings by default (#2908)
             warnings.filterwarnings("always", category=DeprecationWarning)
-            warnings.filterwarnings("always", category=PendingDeprecationWarning)
+            warnings.filterwarnings("always",
+                                    category=PendingDeprecationWarning)
 
         # filters should have this precedence: mark, cmdline options, ini
         # filters should be applied in the inverse order of precedence
@@ -122,22 +124,18 @@ def catch_warnings_for_item(
         yield
 
         for warning_message in log:
-            ihook.pytest_warning_captured.call_historic(
-                kwargs=dict(
-                    warning_message=warning_message,
-                    when=when,
-                    item=item,
-                    location=None,
-                )
-            )
-            ihook.pytest_warning_recorded.call_historic(
-                kwargs=dict(
-                    warning_message=warning_message,
-                    nodeid=nodeid,
-                    when=when,
-                    location=None,
-                )
-            )
+            ihook.pytest_warning_captured.call_historic(kwargs=dict(
+                warning_message=warning_message,
+                when=when,
+                item=item,
+                location=None,
+            ))
+            ihook.pytest_warning_recorded.call_historic(kwargs=dict(
+                warning_message=warning_message,
+                nodeid=nodeid,
+                when=when,
+                location=None,
+            ))
 
 
 def warning_record_to_str(warning_message: warnings.WarningMessage) -> str:
@@ -155,38 +153,41 @@ def warning_record_to_str(warning_message: warnings.WarningMessage) -> str:
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:
-    with catch_warnings_for_item(
-        config=item.config, ihook=item.ihook, when="runtest", item=item
-    ):
+    with catch_warnings_for_item(config=item.config,
+                                 ihook=item.ihook,
+                                 when="runtest",
+                                 item=item):
         yield
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_collection(session: Session) -> Generator[None, None, None]:
     config = session.config
-    with catch_warnings_for_item(
-        config=config, ihook=config.hook, when="collect", item=None
-    ):
+    with catch_warnings_for_item(config=config,
+                                 ihook=config.hook,
+                                 when="collect",
+                                 item=None):
         yield
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_terminal_summary(
-    terminalreporter: TerminalReporter,
-) -> Generator[None, None, None]:
+        terminalreporter: TerminalReporter, ) -> Generator[None, None, None]:
     config = terminalreporter.config
-    with catch_warnings_for_item(
-        config=config, ihook=config.hook, when="config", item=None
-    ):
+    with catch_warnings_for_item(config=config,
+                                 ihook=config.hook,
+                                 when="config",
+                                 item=None):
         yield
 
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_sessionfinish(session: Session) -> Generator[None, None, None]:
     config = session.config
-    with catch_warnings_for_item(
-        config=config, ihook=config.hook, when="config", item=None
-    ):
+    with catch_warnings_for_item(config=config,
+                                 ihook=config.hook,
+                                 when="config",
+                                 item=None):
         yield
 
 
@@ -206,12 +207,12 @@ def _issue_warning_captured(warning: Warning, hook, stacklevel: int) -> None:
     frame = sys._getframe(stacklevel - 1)
     location = frame.f_code.co_filename, frame.f_lineno, frame.f_code.co_name
     hook.pytest_warning_captured.call_historic(
-        kwargs=dict(
-            warning_message=records[0], when="config", item=None, location=location
-        )
-    )
+        kwargs=dict(warning_message=records[0],
+                    when="config",
+                    item=None,
+                    location=location))
     hook.pytest_warning_recorded.call_historic(
-        kwargs=dict(
-            warning_message=records[0], when="config", nodeid="", location=location
-        )
-    )
+        kwargs=dict(warning_message=records[0],
+                    when="config",
+                    nodeid="",
+                    location=location))

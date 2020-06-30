@@ -10,15 +10,12 @@ from _pytest.config.argparsing import Parser
 from _pytest.nodes import Item
 from _pytest.store import StoreKey
 
-
 fault_handler_stderr_key = StoreKey[TextIO]()
 
 
 def pytest_addoption(parser: Parser) -> None:
-    help = (
-        "Dump the traceback of all threads if a test takes "
-        "more than TIMEOUT seconds to finish."
-    )
+    help = ("Dump the traceback of all threads if a test takes "
+            "more than TIMEOUT seconds to finish.")
     parser.addini("faulthandler_timeout", help, default=0.0)
 
 
@@ -28,7 +25,8 @@ def pytest_configure(config: Config) -> None:
     if not faulthandler.is_enabled():
         # faulthhandler is not enabled, so install plugin that does the actual work
         # of enabling faulthandler before each test executes.
-        config.pluginmanager.register(FaultHandlerHooks(), "faulthandler-hooks")
+        config.pluginmanager.register(FaultHandlerHooks(),
+                                      "faulthandler-hooks")
     else:
         from _pytest.warnings import _issue_warning_captured
 
@@ -39,8 +37,7 @@ def pytest_configure(config: Config) -> None:
             _issue_warning_captured(
                 pytest.PytestConfigWarning(
                     "faulthandler module enabled before pytest configuration step, "
-                    "'faulthandler_timeout' option ignored"
-                ),
+                    "'faulthandler_timeout' option ignored"),
                 config.hook,
                 stacklevel=2,
             )
@@ -49,7 +46,6 @@ def pytest_configure(config: Config) -> None:
 class FaultHandlerHooks:
     """Implements hooks that will actually install fault handler before tests execute,
     as well as correctly handle pdb and internal errors."""
-
     def pytest_configure(self, config: Config) -> None:
         import faulthandler
 
@@ -84,7 +80,8 @@ class FaultHandlerHooks:
         return float(config.getini("faulthandler_timeout") or 0.0)
 
     @pytest.hookimpl(hookwrapper=True, trylast=True)
-    def pytest_runtest_protocol(self, item: Item) -> Generator[None, None, None]:
+    def pytest_runtest_protocol(self,
+                                item: Item) -> Generator[None, None, None]:
         timeout = self.get_timeout_config_value(item.config)
         stderr = item.config._store[fault_handler_stderr_key]
         if timeout > 0 and stderr is not None:

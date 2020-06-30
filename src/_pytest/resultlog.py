@@ -12,7 +12,6 @@ from _pytest.reports import CollectReport
 from _pytest.reports import TestReport
 from _pytest.store import StoreKey
 
-
 resultlog_key = StoreKey["ResultLog"]()
 
 
@@ -72,9 +71,8 @@ class ResultLog:
     def pytest_runtest_logreport(self, report: TestReport) -> None:
         if report.when != "call" and report.passed:
             return
-        res = self.config.hook.pytest_report_teststatus(
-            report=report, config=self.config
-        )
+        res = self.config.hook.pytest_report_teststatus(report=report,
+                                                        config=self.config)
         code = res[1]
         if code == "x":
             longrepr = str(report.longrepr)

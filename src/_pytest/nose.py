@@ -12,7 +12,8 @@ def pytest_runtest_setup(item):
             # call module level setup if there is no object level one
             call_optional(item.parent.obj, "setup")
         # XXX this implies we only call teardown when setup worked
-        item.session._setupstate.addfinalizer((lambda: teardown_nose(item)), item)
+        item.session._setupstate.addfinalizer((lambda: teardown_nose(item)),
+                                              item)
 
 
 def teardown_nose(item):
@@ -25,8 +26,7 @@ def is_potential_nosetest(item: Item) -> bool:
     # extra check needed since we do not do nose style setup/teardown
     # on direct unittest style classes
     return isinstance(item, python.Function) and not isinstance(
-        item, unittest.TestCaseFunction
-    )
+        item, unittest.TestCaseFunction)
 
 
 def call_optional(obj, name):

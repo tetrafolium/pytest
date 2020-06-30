@@ -11,7 +11,6 @@ from _pytest.config.argparsing import Parser
 from _pytest.store import StoreKey
 from _pytest.terminal import TerminalReporter
 
-
 pastebinfile_key = StoreKey[IO[bytes]]()
 
 
@@ -80,9 +79,9 @@ def create_new_paste(contents: Union[str, bytes]) -> str:
     params = {"code": contents, "lexer": "text", "expiry": "1week"}
     url = "https://bpaste.net"
     try:
-        response = (
-            urlopen(url, data=urlencode(params).encode("ascii")).read().decode("utf-8")
-        )  # type: str
+        response = (urlopen(
+            url, data=urlencode(params).encode("ascii")).read().decode("utf-8")
+                    )  # type: str
     except OSError as exc_info:  # urllib errors
         return "bad response: %s" % exc_info
     m = re.search(r'href="/raw/(\w+)"', response)

@@ -23,8 +23,8 @@ def _format_repr_exception(exc: BaseException, obj: object) -> str:
     except BaseException as exc:
         exc_info = "unpresentable exception ({})".format(_try_repr_or_str(exc))
     return "<[{} raised in repr()] {} object at 0x{:x}>".format(
-        exc_info, type(obj).__name__, id(obj)
-    )
+        exc_info,
+        type(obj).__name__, id(obj))
 
 
 def _ellipsize(s: str, maxsize: int) -> str:
@@ -39,7 +39,6 @@ class SafeRepr(reprlib.Repr):
     """subclass of repr.Repr that limits the resulting size of repr()
     and includes information on exceptions raised during the call.
     """
-
     def __init__(self, maxsize: int) -> None:
         super().__init__()
         self.maxstring = maxsize
@@ -87,24 +86,29 @@ def saferepr(obj: object, maxsize: int = 240) -> str:
 
 class AlwaysDispatchingPrettyPrinter(pprint.PrettyPrinter):
     """PrettyPrinter that always dispatches (regardless of width)."""
-
     def _format(
-        self,
-        object: object,
-        stream: IO[str],
-        indent: int,
-        allowance: int,
-        context: Dict[int, Any],
-        level: int,
+            self,
+            object: object,
+            stream: IO[str],
+            indent: int,
+            allowance: int,
+            context: Dict[int, Any],
+            level: int,
     ) -> None:
         # Type ignored because _dispatch is private.
-        p = self._dispatch.get(type(object).__repr__, None)  # type: ignore[attr-defined] # noqa: F821
+        p = self._dispatch.get(type(object).__repr__,
+                               None)  # type: ignore[attr-defined] # noqa: F821
 
         objid = id(object)
         if objid in context or p is None:
             # Type ignored because _format is private.
             super()._format(  # type: ignore[misc] # noqa: F821
-                object, stream, indent, allowance, context, level,
+                object,
+                stream,
+                indent,
+                allowance,
+                context,
+                level,
             )
             return
 
@@ -113,14 +117,13 @@ class AlwaysDispatchingPrettyPrinter(pprint.PrettyPrinter):
         del context[objid]
 
 
-def _pformat_dispatch(
-    object: object,
-    indent: int = 1,
-    width: int = 80,
-    depth: Optional[int] = None,
-    *,
-    compact: bool = False
-) -> str:
-    return AlwaysDispatchingPrettyPrinter(
-        indent=indent, width=width, depth=depth, compact=compact
-    ).pformat(object)
+def _pformat_dispatch(object: object,
+                      indent: int = 1,
+                      width: int = 80,
+                      depth: Optional[int] = None,
+                      *,
+                      compact: bool = False) -> str:
+    return AlwaysDispatchingPrettyPrinter(indent=indent,
+                                          width=width,
+                                          depth=depth,
+                                          compact=compact).pformat(object)

@@ -30,13 +30,11 @@ class YamlItem(pytest.Item):
     def repr_failure(self, excinfo):
         """ called when self.runtest() raises an exception. """
         if isinstance(excinfo.value, YamlException):
-            return "\n".join(
-                [
-                    "usecase execution failed",
-                    "   spec failed: {1!r}: {2!r}".format(*excinfo.value.args),
-                    "   no further details known at this point.",
-                ]
-            )
+            return "\n".join([
+                "usecase execution failed",
+                "   spec failed: {1!r}: {2!r}".format(*excinfo.value.args),
+                "   no further details known at this point.",
+            ])
 
     def reportinfo(self):
         return self.fspath, 0, "usecase: {}".format(self.name)

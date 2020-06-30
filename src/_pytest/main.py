@@ -37,7 +37,6 @@ from _pytest.reports import TestReport
 from _pytest.runner import collect_one_node
 from _pytest.runner import SetupState
 
-
 if TYPE_CHECKING:
     from typing import Type
     from typing_extensions import Literal
@@ -50,7 +49,9 @@ def pytest_addoption(parser: Parser) -> None:
         "norecursedirs",
         "directory patterns to avoid for recursion",
         type="args",
-        default=[".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg", "venv"],
+        default=[
+            ".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg", "venv"
+        ],
     )
     parser.addini(
         "testpaths",
@@ -80,20 +81,23 @@ def pytest_addoption(parser: Parser) -> None:
     group._addoption(
         "--strict-config",
         action="store_true",
-        help="any warnings encountered while parsing the `pytest` section of the configuration file raise errors.",
+        help=
+        "any warnings encountered while parsing the `pytest` section of the configuration file raise errors.",
     )
     group._addoption(
         "--strict-markers",
         "--strict",
         action="store_true",
-        help="markers not registered in the `markers` section of the configuration file raise errors.",
+        help=
+        "markers not registered in the `markers` section of the configuration file raise errors.",
     )
     group._addoption(
         "-c",
         metavar="file",
         type=str,
         dest="inifilename",
-        help="load configuration from `file` instead of trying to locate one of the implicit "
+        help=
+        "load configuration from `file` instead of trying to locate one of the implicit "
         "configuration files.",
     )
     group._addoption(
@@ -107,7 +111,8 @@ def pytest_addoption(parser: Parser) -> None:
         "--rootdir",
         action="store",
         dest="rootdir",
-        help="Define root directory for tests. Can be relative path: 'root_dir', './root_dir', "
+        help=
+        "Define root directory for tests. Can be relative path: 'root_dir', './root_dir', "
         "'root_dir/another_dir/'; absolute path: '/home/user/root_dir'; path with variables: "
         "'$HOME/root_dir'.",
     )
@@ -141,7 +146,8 @@ def pytest_addoption(parser: Parser) -> None:
         "--deselect",
         action="append",
         metavar="nodeid_prefix",
-        help="deselect item (via node id prefix) during collection (multi-allowed).",
+        help=
+        "deselect item (via node id prefix) during collection (multi-allowed).",
     )
     group.addoption(
         "--confcutdir",
@@ -178,21 +184,21 @@ def pytest_addoption(parser: Parser) -> None:
         default="prepend",
         choices=["prepend", "append", "importlib"],
         dest="importmode",
-        help="prepend/append to sys.path when importing test modules and conftest files, "
+        help=
+        "prepend/append to sys.path when importing test modules and conftest files, "
         "default is to prepend.",
     )
 
-    group = parser.getgroup("debugconfig", "test session debugging and configuration")
+    group = parser.getgroup("debugconfig",
+                            "test session debugging and configuration")
     group.addoption(
         "--basetemp",
         dest="basetemp",
         default=None,
         type=validate_basetemp,
         metavar="dir",
-        help=(
-            "base temporary directory for this test run."
-            "(warning: this directory is removed if it exists)"
-        ),
+        help=("base temporary directory for this test run."
+              "(warning: this directory is removed if it exists)"),
     )
 
 
@@ -225,7 +231,8 @@ def validate_basetemp(path: str) -> str:
 
 
 def wrap_session(
-    config: Config, doit: Callable[[Config, "Session"], Optional[Union[int, ExitCode]]]
+    config: Config, doit: Callable[[Config, "Session"],
+                                   Optional[Union[int, ExitCode]]]
 ) -> Union[int, ExitCode]:
     """Skeleton command line program"""
     session = Session.from_config(config)
@@ -250,9 +257,8 @@ def wrap_session(
                 if excinfo.value.returncode is not None:
                     exitstatus = excinfo.value.returncode
                 if initstate < 2:
-                    sys.stderr.write(
-                        "{}: {}\n".format(excinfo.typename, excinfo.value.msg)
-                    )
+                    sys.stderr.write("{}: {}\n".format(excinfo.typename,
+                                                       excinfo.value.msg))
             config.hook.pytest_keyboard_interrupt(excinfo=excinfo)
             session.exitstatus = exitstatus
         except BaseException:
@@ -266,7 +272,8 @@ def wrap_session(
                 sys.stderr.write("{}: {}\n".format(type(exc).__name__, exc))
             else:
                 if excinfo.errisinstance(SystemExit):
-                    sys.stderr.write("mainloop: caught unexpected SystemExit!\n")
+                    sys.stderr.write(
+                        "mainloop: caught unexpected SystemExit!\n")
 
     finally:
         # Explicitly break reference cycle.
@@ -274,9 +281,8 @@ def wrap_session(
         session.startdir.chdir()
         if initstate >= 2:
             try:
-                config.hook.pytest_sessionfinish(
-                    session=session, exitstatus=session.exitstatus
-                )
+                config.hook.pytest_sessionfinish(session=session,
+                                                 exitstatus=session.exitstatus)
             except exit.Exception as exc:
                 if exc.returncode is not None:
                     session.exitstatus = exc.returncode
@@ -289,7 +295,8 @@ def pytest_cmdline_main(config: Config) -> Union[int, ExitCode]:
     return wrap_session(config, _main)
 
 
-def _main(config: Config, session: "Session") -> Optional[Union[int, ExitCode]]:
+def _main(config: Config,
+          session: "Session") -> Optional[Union[int, ExitCode]]:
     """ default command line protocol for initialization, session,
     running tests and reporting. """
     config.hook.pytest_collection(session=session)
@@ -309,9 +316,8 @@ def pytest_collection(session: "Session") -> None:
 def pytest_runtestloop(session: "Session") -> bool:
     if session.testsfailed and not session.config.option.continue_on_collection_errors:
         raise session.Interrupted(
-            "%d error%s during collection"
-            % (session.testsfailed, "s" if session.testsfailed != 1 else "")
-        )
+            "%d error%s during collection" %
+            (session.testsfailed, "s" if session.testsfailed != 1 else ""))
 
     if session.config.option.collectonly:
         return True
@@ -343,8 +349,10 @@ def _in_venv(path: py.path.local) -> bool:
     return any([fname.basename in activates for fname in bindir.listdir()])
 
 
-def pytest_ignore_collect(path: py.path.local, config: Config) -> Optional[bool]:
-    ignore_paths = config._getconftest_pathlist("collect_ignore", path=path.dirpath())
+def pytest_ignore_collect(path: py.path.local,
+                          config: Config) -> Optional[bool]:
+    ignore_paths = config._getconftest_pathlist("collect_ignore",
+                                                path=path.dirpath())
     ignore_paths = ignore_paths or []
     excludeopt = config.getoption("ignore")
     if excludeopt:
@@ -353,9 +361,8 @@ def pytest_ignore_collect(path: py.path.local, config: Config) -> Optional[bool]
     if py.path.local(path) in ignore_paths:
         return True
 
-    ignore_globs = config._getconftest_pathlist(
-        "collect_ignore_glob", path=path.dirpath()
-    )
+    ignore_globs = config._getconftest_pathlist("collect_ignore_glob",
+                                                path=path.dirpath())
     ignore_globs = ignore_globs or []
     excludeglobopt = config.getoption("ignore_glob")
     if excludeglobopt:
@@ -370,7 +377,8 @@ def pytest_ignore_collect(path: py.path.local, config: Config) -> Optional[bool]
     return None
 
 
-def pytest_collection_modifyitems(items: List[nodes.Item], config: Config) -> None:
+def pytest_collection_modifyitems(items: List[nodes.Item],
+                                  config: Config) -> None:
     deselect_prefixes = tuple(config.getoption("deselect") or [])
     if not deselect_prefixes:
         return
@@ -422,9 +430,12 @@ class Session(nodes.FSCollector):
     exitstatus = None  # type: Union[int, ExitCode]
 
     def __init__(self, config: Config) -> None:
-        nodes.FSCollector.__init__(
-            self, config.rootdir, parent=None, config=config, session=self, nodeid=""
-        )
+        nodes.FSCollector.__init__(self,
+                                   config.rootdir,
+                                   parent=None,
+                                   config=config,
+                                   session=self,
+                                   nodeid="")
         self.testsfailed = 0
         self.testscollected = 0
         self.shouldstop = False  # type: Union[bool, str]
@@ -435,21 +446,18 @@ class Session(nodes.FSCollector):
 
         # Keep track of any collected nodes in here, so we don't duplicate fixtures
         self._collection_node_cache1 = (
-            {}
-        )  # type: Dict[py.path.local, Sequence[nodes.Collector]]
+            {})  # type: Dict[py.path.local, Sequence[nodes.Collector]]
         self._collection_node_cache2 = (
             {}
         )  # type: Dict[Tuple[Type[nodes.Collector], py.path.local], nodes.Collector]
         self._collection_node_cache3 = (
-            {}
-        )  # type: Dict[Tuple[Type[nodes.Collector], str], CollectReport]
+            {})  # type: Dict[Tuple[Type[nodes.Collector], str], CollectReport]
 
         # Dirnames of pkgs with dunder-init files.
         self._collection_pkg_roots = {}  # type: Dict[str, Package]
 
         self._bestrelpathcache = _bestrelpath_cache(
-            config.rootdir
-        )  # type: Dict[py.path.local, str]
+            config.rootdir)  # type: Dict[py.path.local, str]
 
         self.config.pluginmanager.register(self, name="session")
 
@@ -480,13 +488,13 @@ class Session(nodes.FSCollector):
 
     @hookimpl(tryfirst=True)
     def pytest_runtest_logreport(
-        self, report: Union[TestReport, CollectReport]
-    ) -> None:
+            self, report: Union[TestReport, CollectReport]) -> None:
         if report.failed and not hasattr(report, "wasxfail"):
             self.testsfailed += 1
             maxfail = self.config.getvalue("maxfail")
             if maxfail and self.testsfailed >= maxfail:
-                self.shouldfail = "stopping after %d failures" % (self.testsfailed)
+                self.shouldfail = "stopping after %d failures" % (
+                    self.testsfailed)
 
     pytest_collectreport = pytest_runtest_logreport
 
@@ -498,46 +506,52 @@ class Session(nodes.FSCollector):
 
     @overload
     def perform_collect(
-        self, args: Optional[Sequence[str]] = ..., genitems: "Literal[True]" = ...
-    ) -> Sequence[nodes.Item]:
+            self,
+            args: Optional[Sequence[str]] = ...,
+            genitems: "Literal[True]" = ...) -> Sequence[nodes.Item]:
         raise NotImplementedError()
 
     @overload  # noqa: F811
     def perform_collect(  # noqa: F811
-        self, args: Optional[Sequence[str]] = ..., genitems: bool = ...
+        self,
+        args: Optional[Sequence[str]] = ...,
+        genitems: bool = ...
     ) -> Sequence[Union[nodes.Item, nodes.Collector]]:
         raise NotImplementedError()
 
     def perform_collect(  # noqa: F811
-        self, args: Optional[Sequence[str]] = None, genitems: bool = True
+        self,
+        args: Optional[Sequence[str]] = None,
+        genitems: bool = True
     ) -> Sequence[Union[nodes.Item, nodes.Collector]]:
         hook = self.config.hook
         try:
             items = self._perform_collect(args, genitems)
             self.config.pluginmanager.check_pending()
-            hook.pytest_collection_modifyitems(
-                session=self, config=self.config, items=items
-            )
+            hook.pytest_collection_modifyitems(session=self,
+                                               config=self.config,
+                                               items=items)
         finally:
             hook.pytest_collection_finish(session=self)
         self.testscollected = len(items)
         return items
 
     @overload
-    def _perform_collect(
-        self, args: Optional[Sequence[str]], genitems: "Literal[True]"
-    ) -> List[nodes.Item]:
+    def _perform_collect(self, args: Optional[Sequence[str]],
+                         genitems: "Literal[True]") -> List[nodes.Item]:
         raise NotImplementedError()
 
     @overload  # noqa: F811
     def _perform_collect(  # noqa: F811
         self, args: Optional[Sequence[str]], genitems: bool
-    ) -> Union[List[Union[nodes.Item]], List[Union[nodes.Item, nodes.Collector]]]:
+    ) -> Union[List[Union[nodes.Item]], List[Union[nodes.Item,
+                                                   nodes.Collector]]]:
         raise NotImplementedError()
 
     def _perform_collect(  # noqa: F811
         self, args: Optional[Sequence[str]], genitems: bool
-    ) -> Union[List[Union[nodes.Item]], List[Union[nodes.Item, nodes.Collector]]]:
+    ) -> Union[List[Union[nodes.Item]], List[Union[nodes.Item,
+                                                   nodes.Collector]]]:
         if args is None:
             args = self.config.args
         self.trace("perform_collect", self, args)
@@ -587,8 +601,8 @@ class Session(nodes.FSCollector):
         self._collection_pkg_roots.clear()
 
     def _collect(
-        self, argpath: py.path.local, names: List[str]
-    ) -> Iterator[Union[nodes.Item, nodes.Collector]]:
+            self, argpath: py.path.local,
+            names: List[str]) -> Iterator[Union[nodes.Item, nodes.Collector]]:
         from _pytest.python import Package
 
         # Start with a Session root, and delve to argpath item (dir or file)
@@ -604,12 +618,16 @@ class Session(nodes.FSCollector):
                     pkginit = parent.join("__init__.py")
                     if pkginit.isfile():
                         if pkginit not in self._collection_node_cache1:
-                            col = self._collectfile(pkginit, handle_dupes=False)
+                            col = self._collectfile(pkginit,
+                                                    handle_dupes=False)
                             if col:
                                 if isinstance(col[0], Package):
-                                    self._collection_pkg_roots[str(parent)] = col[0]
+                                    self._collection_pkg_roots[str(
+                                        parent)] = col[0]
                                 # always store a list in the cache, matchnodes expects it
-                                self._collection_node_cache1[col[0].fspath] = [col[0]]
+                                self._collection_node_cache1[col[0].fspath] = [
+                                    col[0]
+                                ]
 
         # If it's a directory argument, recurse and look for any Subpackages.
         # Let the Package collector deal with subnodes, don't collect here.
@@ -617,9 +635,10 @@ class Session(nodes.FSCollector):
             assert not names, "invalid arg {!r}".format((argpath, names))
 
             seen_dirs = set()  # type: Set[py.path.local]
-            for path in argpath.visit(
-                fil=self._visit_filter, rec=self._recurse, bf=True, sort=True
-            ):
+            for path in argpath.visit(fil=self._visit_filter,
+                                      rec=self._recurse,
+                                      bf=True,
+                                      sort=True):
                 dirpath = path.dirpath()
                 if dirpath not in seen_dirs:
                     # Collect packages first.
@@ -647,7 +666,8 @@ class Session(nodes.FSCollector):
             if argpath in self._collection_node_cache1:
                 col = self._collection_node_cache1[argpath]
             else:
-                collect_root = self._collection_pkg_roots.get(argpath.dirname, self)
+                collect_root = self._collection_pkg_roots.get(
+                    argpath.dirname, self)
                 col = collect_root._collectfile(argpath, handle_dupes=False)
                 if col:
                     self._collection_node_cache1[argpath] = col
@@ -698,14 +718,15 @@ class Session(nodes.FSCollector):
         fspath = self.config.invocation_dir.join(relpath, abs=True)
         if not fspath.check():
             if self.config.option.pyargs:
-                raise UsageError(
-                    "file or package not found: " + arg + " (missing __init__.py?)"
-                )
+                raise UsageError("file or package not found: " + arg +
+                                 " (missing __init__.py?)")
             raise UsageError("file not found: " + arg)
         return (fspath, parts)
 
     def matchnodes(
-        self, matching: Sequence[Union[nodes.Item, nodes.Collector]], names: List[str],
+        self,
+        matching: Sequence[Union[nodes.Item, nodes.Collector]],
+        names: List[str],
     ) -> Sequence[Union[nodes.Item, nodes.Collector]]:
         self.trace("matchnodes", matching, names)
         self.trace.root.indent += 1
@@ -718,7 +739,9 @@ class Session(nodes.FSCollector):
         return nodes
 
     def _matchnodes(
-        self, matching: Sequence[Union[nodes.Item, nodes.Collector]], names: List[str],
+        self,
+        matching: Sequence[Union[nodes.Item, nodes.Collector]],
+        names: List[str],
     ) -> Sequence[Union[nodes.Item, nodes.Collector]]:
         if not matching or not names:
             return matching
@@ -757,8 +780,8 @@ class Session(nodes.FSCollector):
         return resultnodes
 
     def genitems(
-        self, node: Union[nodes.Item, nodes.Collector]
-    ) -> Iterator[nodes.Item]:
+            self, node: Union[nodes.Item,
+                              nodes.Collector]) -> Iterator[nodes.Item]:
         self.trace("genitems", node)
         if isinstance(node, nodes.Item):
             node.ihook.pytest_itemcollected(item=node)

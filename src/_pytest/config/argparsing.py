@@ -53,9 +53,10 @@ class Parser:
             if option.dest:
                 self._processopt(option)
 
-    def getgroup(
-        self, name: str, description: str = "", after: Optional[str] = None
-    ) -> "OptionGroup":
+    def getgroup(self,
+                 name: str,
+                 description: str = "",
+                 after: Optional[str] = None) -> "OptionGroup":
         """ get (or create) a named option Group.
 
         :name: name of the option group.
@@ -126,10 +127,10 @@ class Parser:
         return optparser
 
     def parse_setoption(
-        self,
-        args: Sequence[Union[str, py.path.local]],
-        option: argparse.Namespace,
-        namespace: Optional[argparse.Namespace] = None,
+            self,
+            args: Sequence[Union[str, py.path.local]],
+            option: argparse.Namespace,
+            namespace: Optional[argparse.Namespace] = None,
     ) -> List[str]:
         parsedoption = self.parse(args, namespace=namespace)
         for name, value in parsedoption.__dict__.items():
@@ -159,11 +160,12 @@ class Parser:
         return optparser.parse_known_args(strargs, namespace=namespace)
 
     def addini(
-        self,
-        name: str,
-        help: str,
-        type: Optional["Literal['pathlist', 'args', 'linelist', 'bool']"] = None,
-        default=None,
+            self,
+            name: str,
+            help: str,
+            type: Optional[
+                "Literal['pathlist', 'args', 'linelist', 'bool']"] = None,
+            default=None,
     ) -> None:
         """ register an ini-file option.
 
@@ -185,7 +187,6 @@ class ArgumentError(Exception):
     Raised if an Argument instance is created with invalid or
     inconsistent arguments.
     """
-
     def __init__(self, msg: str, option: Union["Argument", str]) -> None:
         self.msg = msg
         self.option_id = str(option)
@@ -331,9 +332,10 @@ class Argument:
 
 
 class OptionGroup:
-    def __init__(
-        self, name: str, description: str = "", parser: Optional[Parser] = None
-    ) -> None:
+    def __init__(self,
+                 name: str,
+                 description: str = "",
+                 parser: Optional[Parser] = None) -> None:
         self.name = name
         self.description = description
         self.options = []  # type: List[Argument]
@@ -347,9 +349,8 @@ class OptionGroup:
         results in help showing '--two-words' only, but --twowords gets
         accepted **and** the automatic destination is in args.twowords
         """
-        conflict = set(optnames).intersection(
-            name for opt in self.options for name in opt.names()
-        )
+        conflict = set(optnames).intersection(name for opt in self.options
+                                              for name in opt.names())
         if conflict:
             raise ValueError("option names %s already added" % conflict)
         option = Argument(*optnames, **attrs)
@@ -359,7 +360,9 @@ class OptionGroup:
         option = Argument(*optnames, **attrs)
         self._addoption_instance(option, shortupper=True)
 
-    def _addoption_instance(self, option: "Argument", shortupper: bool = False) -> None:
+    def _addoption_instance(self,
+                            option: "Argument",
+                            shortupper: bool = False) -> None:
         if not shortupper:
             for opt in option._short_opts:
                 if opt[0] == "-" and opt[1].islower():
@@ -371,10 +374,10 @@ class OptionGroup:
 
 class MyOptionParser(argparse.ArgumentParser):
     def __init__(
-        self,
-        parser: Parser,
-        extra_info: Optional[Dict[str, Any]] = None,
-        prog: Optional[str] = None,
+            self,
+            parser: Parser,
+            extra_info: Optional[Dict[str, Any]] = None,
+            prog: Optional[str] = None,
     ) -> None:
         self._parser = parser
         argparse.ArgumentParser.__init__(
@@ -395,7 +398,8 @@ class MyOptionParser(argparse.ArgumentParser):
 
         if hasattr(self._parser, "_config_source_hint"):
             # Type ignored because the attribute is set dynamically.
-            msg = "{} ({})".format(msg, self._parser._config_source_hint)  # type: ignore
+            msg = "{} ({})".format(
+                msg, self._parser._config_source_hint)  # type: ignore
 
         raise UsageError(self.format_usage() + msg)
 
@@ -410,7 +414,9 @@ class MyOptionParser(argparse.ArgumentParser):
         if unrecognized:
             for arg in unrecognized:
                 if arg and arg[0] == "-":
-                    lines = ["unrecognized arguments: %s" % (" ".join(unrecognized))]
+                    lines = [
+                        "unrecognized arguments: %s" % (" ".join(unrecognized))
+                    ]
                     for k, v in sorted(self.extra_info.items()):
                         lines.append("  {}: {}".format(k, v))
                     self.error("\n".join(lines))
@@ -441,12 +447,15 @@ class MyOptionParser(argparse.ArgumentParser):
                 option_tuples = self._get_option_tuples(arg_string)
                 if len(option_tuples) > 1:
                     msg = gettext(
-                        "ambiguous option: %(option)s could match %(matches)s"
-                    )
-                    options = ", ".join(option for _, option, _ in option_tuples)
-                    self.error(msg % {"option": arg_string, "matches": options})
+                        "ambiguous option: %(option)s could match %(matches)s")
+                    options = ", ".join(option
+                                        for _, option, _ in option_tuples)
+                    self.error(msg % {
+                        "option": arg_string,
+                        "matches": options
+                    })
                 elif len(option_tuples) == 1:
-                    (option_tuple,) = option_tuples
+                    (option_tuple, ) = option_tuples
                     return option_tuple
             if self._negative_number_matcher.match(arg_string):
                 if not self._has_negative_number_optionals:
@@ -463,7 +472,6 @@ class DropShorterLongHelpFormatter(argparse.HelpFormatter):
     - shortcut if there are only two options and one of them is a short one
     - cache result on action object as this is called at least 2 times
     """
-
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Use more accurate terminal width via pylib."""
         if "width" not in kwargs:
@@ -474,13 +482,13 @@ class DropShorterLongHelpFormatter(argparse.HelpFormatter):
         orgstr = argparse.HelpFormatter._format_action_invocation(self, action)
         if orgstr and orgstr[0] != "-":  # only optional arguments
             return orgstr
-        res = getattr(
-            action, "_formatted_action_invocation", None
-        )  # type: Optional[str]
+        res = getattr(action, "_formatted_action_invocation",
+                      None)  # type: Optional[str]
         if res:
             return res
         options = orgstr.split(", ")
-        if len(options) == 2 and (len(options[0]) == 2 or len(options[1]) == 2):
+        if len(options) == 2 and (len(options[0]) == 2
+                                  or len(options[1]) == 2):
             # a shortcut for '-h, --help' or '--abc', '-a'
             action._formatted_action_invocation = orgstr  # type: ignore
             return orgstr
@@ -491,13 +499,12 @@ class DropShorterLongHelpFormatter(argparse.HelpFormatter):
                 continue
             if not option.startswith("--"):
                 raise ArgumentError(
-                    'long optional argument without "--": [%s]' % (option), option
-                )
+                    'long optional argument without "--": [%s]' % (option),
+                    option)
             xxoption = option[2:]
             shortened = xxoption.replace("-", "")
-            if shortened not in short_long or len(short_long[shortened]) < len(
-                xxoption
-            ):
+            if shortened not in short_long or len(
+                    short_long[shortened]) < len(xxoption):
                 short_long[shortened] = xxoption
         # now short_long has been filled out to the longest with dashes
         # **and** we keep the right option ordering from add_argument

@@ -30,20 +30,16 @@ from _pytest.warning_types import PytestUnknownMarkWarning
 if TYPE_CHECKING:
     from _pytest.python import FunctionDefinition
 
-
 EMPTY_PARAMETERSET_OPTION = "empty_parameter_set_mark"
 
 
 def istestfunc(func) -> bool:
-    return (
-        hasattr(func, "__call__")
-        and getattr(func, "__name__", "<lambda>") != "<lambda>"
-    )
+    return (hasattr(func, "__call__")
+            and getattr(func, "__name__", "<lambda>") != "<lambda>")
 
 
-def get_empty_parameterset_mark(
-    config: Config, argnames: Sequence[str], func
-) -> "MarkDecorator":
+def get_empty_parameterset_mark(config: Config, argnames: Sequence[str],
+                                func) -> "MarkDecorator":
     from ..nodes import Collector
 
     fs, lineno = getfslineno(func)
@@ -62,33 +58,32 @@ def get_empty_parameterset_mark(
     elif requested_mark == "fail_at_collect":
         f_name = func.__name__
         _, lineno = getfslineno(func)
-        raise Collector.CollectError(
-            "Empty parameter set in '%s' at line %d" % (f_name, lineno + 1)
-        )
+        raise Collector.CollectError("Empty parameter set in '%s' at line %d" %
+                                     (f_name, lineno + 1))
     else:
         raise LookupError(requested_mark)
     return mark
 
 
 class ParameterSet(
-    NamedTuple(
-        "ParameterSet",
-        [
-            ("values", Sequence[Union[object, NotSetType]]),
-            ("marks", "typing.Collection[Union[MarkDecorator, Mark]]"),
-            ("id", Optional[str]),
-        ],
-    )
-):
+        NamedTuple(
+            "ParameterSet",
+            [
+                ("values", Sequence[Union[object, NotSetType]]),
+                ("marks", "typing.Collection[Union[MarkDecorator, Mark]]"),
+                ("id", Optional[str]),
+            ],
+        )):
     @classmethod
     def param(
-        cls,
-        *values: object,
-        marks: "Union[MarkDecorator, typing.Collection[Union[MarkDecorator, Mark]]]" = (),
-        id: Optional[str] = None
-    ) -> "ParameterSet":
+            cls,
+            *values: object,
+            marks:
+            "Union[MarkDecorator, typing.Collection[Union[MarkDecorator, Mark]]]" = (
+            ),
+            id: Optional[str] = None) -> "ParameterSet":
         if isinstance(marks, MarkDecorator):
-            marks = (marks,)
+            marks = (marks, )
         else:
             # TODO(py36): Change to collections.abc.Collection.
             assert isinstance(marks, (collections.abc.Sequence, set))
@@ -96,16 +91,16 @@ class ParameterSet(
         if id is not None:
             if not isinstance(id, str):
                 raise TypeError(
-                    "Expected id to be a string, got {}: {!r}".format(type(id), id)
-                )
+                    "Expected id to be a string, got {}: {!r}".format(
+                        type(id), id))
             id = ascii_escaped(id)
         return cls(values, marks, id)
 
     @classmethod
     def extract_from(
-        cls,
-        parameterset: Union["ParameterSet", Sequence[object], object],
-        force_tuple: bool = False,
+            cls,
+            parameterset: Union["ParameterSet", Sequence[object], object],
+            force_tuple: bool = False,
     ) -> "ParameterSet":
         """
         :param parameterset:
@@ -127,15 +122,15 @@ class ParameterSet(
             #
             #   @pytest.mark.parametrize(('x', 'y'), [1, 2])
             #   def test_foo(x, y): pass
-            return cls(parameterset, marks=[], id=None)  # type: ignore[arg-type] # noqa: F821
+            return cls(parameterset, marks=[],
+                       id=None)  # type: ignore[arg-type] # noqa: F821
 
     @staticmethod
     def _parse_parametrize_args(
-        argnames: Union[str, List[str], Tuple[str, ...]],
-        argvalues: Iterable[Union["ParameterSet", Sequence[object], object]],
-        *args,
-        **kwargs
-    ) -> Tuple[Union[List[str], Tuple[str, ...]], bool]:
+            argnames: Union[str, List[str], Tuple[str, ...]],
+            argvalues: Iterable[Union["ParameterSet", Sequence[object],
+                                      object]], *args,
+            **kwargs) -> Tuple[Union[List[str], Tuple[str, ...]], bool]:
         if not isinstance(argnames, (tuple, list)):
             argnames = [x.strip() for x in argnames.split(",") if x.strip()]
             force_tuple = len(argnames) == 1
@@ -145,11 +140,13 @@ class ParameterSet(
 
     @staticmethod
     def _parse_parametrize_parameters(
-        argvalues: Iterable[Union["ParameterSet", Sequence[object], object]],
-        force_tuple: bool,
+            argvalues: Iterable[Union["ParameterSet", Sequence[object],
+                                      object]],
+            force_tuple: bool,
     ) -> List["ParameterSet"]:
         return [
-            ParameterSet.extract_from(x, force_tuple=force_tuple) for x in argvalues
+            ParameterSet.extract_from(x, force_tuple=force_tuple)
+            for x in argvalues
         ]
 
     @classmethod
@@ -161,7 +158,8 @@ class ParameterSet(
         config: Config,
         function_definition: "FunctionDefinition",
     ) -> Tuple[Union[List[str], Tuple[str, ...]], List["ParameterSet"]]:
-        argnames, force_tuple = cls._parse_parametrize_args(argnames, argvalues)
+        argnames, force_tuple = cls._parse_parametrize_args(
+            argnames, argvalues)
         parameters = cls._parse_parametrize_parameters(argvalues, force_tuple)
         del argvalues
 
@@ -173,8 +171,7 @@ class ParameterSet(
                         '{nodeid}: in "parametrize" the number of names ({names_len}):\n'
                         "  {names}\n"
                         "must be equal to the number of values ({values_len}):\n"
-                        "  {values}"
-                    )
+                        "  {values}")
                     fail(
                         msg.format(
                             nodeid=function_definition.nodeid,
@@ -190,8 +187,9 @@ class ParameterSet(
             # parameter set with NOTSET values, with the "empty parameter set" mark applied to it
             mark = get_empty_parameterset_mark(config, argnames, func)
             parameters.append(
-                ParameterSet(values=(NOTSET,) * len(argnames), marks=[mark], id=None)
-            )
+                ParameterSet(values=(NOTSET, ) * len(argnames),
+                             marks=[mark],
+                             id=None))
         return argnames, parameters
 
 
@@ -207,9 +205,9 @@ class Mark:
     #: Source Mark for ids with parametrize Marks.
     _param_ids_from = attr.ib(type=Optional["Mark"], default=None, repr=False)
     #: Resolved/generated ids with parametrize Marks.
-    _param_ids_generated = attr.ib(
-        type=Optional[Sequence[str]], default=None, repr=False
-    )
+    _param_ids_generated = attr.ib(type=Optional[Sequence[str]],
+                                   default=None,
+                                   repr=False)
 
     def _has_param_ids(self) -> bool:
         return "ids" in self.kwargs or len(self.args) >= 4
@@ -323,13 +321,14 @@ class MarkDecorator:
     # return type. Not much we can do about that. Thankfully mypy picks
     # the first match so it works out even if we break the rules.
     @overload
-    def __call__(self, arg: _Markable) -> _Markable:  # type: ignore[misc] # noqa: F821
+    def __call__(
+            self,
+            arg: _Markable) -> _Markable:  # type: ignore[misc] # noqa: F821
         raise NotImplementedError()
 
     @overload  # noqa: F811
     def __call__(  # noqa: F811
-        self, *args: object, **kwargs: object
-    ) -> "MarkDecorator":
+            self, *args: object, **kwargs: object) -> "MarkDecorator":
         raise NotImplementedError()
 
     def __call__(self, *args: object, **kwargs: object):  # noqa: F811
@@ -353,16 +352,16 @@ def get_unpacked_marks(obj) -> List[Mark]:
     return normalize_mark_list(mark_list)
 
 
-def normalize_mark_list(mark_list: Iterable[Union[Mark, MarkDecorator]]) -> List[Mark]:
+def normalize_mark_list(
+        mark_list: Iterable[Union[Mark, MarkDecorator]]) -> List[Mark]:
     """
     normalizes marker decorating helpers to mark objects
 
     :type mark_list: List[Union[Mark, Markdecorator]]
     :rtype: List[Mark]
     """
-    extracted = [
-        getattr(mark, "mark", mark) for mark in mark_list
-    ]  # unpack MarkDecorator
+    extracted = [getattr(mark, "mark", mark)
+                 for mark in mark_list]  # unpack MarkDecorator
     for mark in extracted:
         if not isinstance(mark, Mark):
             raise TypeError("got {!r} instead of Mark".format(mark))
@@ -396,11 +395,10 @@ if TYPE_CHECKING:
 
     class _SkipifMarkDecorator(MarkDecorator):
         def __call__(  # type: ignore[override]
-            self,
-            condition: Union[str, bool] = ...,
-            *conditions: Union[str, bool],
-            reason: str = ...
-        ) -> MarkDecorator:
+                self,
+                condition: Union[str, bool] = ...,
+                *conditions: Union[str, bool],
+                reason: str = ...) -> MarkDecorator:
             raise NotImplementedError()
 
     class _XfailMarkDecorator(MarkDecorator):
@@ -410,43 +408,38 @@ if TYPE_CHECKING:
 
         @overload  # noqa: F811
         def __call__(  # noqa: F811
-            self,
-            condition: Union[str, bool] = ...,
-            *conditions: Union[str, bool],
-            reason: str = ...,
-            run: bool = ...,
-            raises: Union[BaseException, Tuple[BaseException, ...]] = ...,
-            strict: bool = ...
-        ) -> MarkDecorator:
+                self,
+                condition: Union[str, bool] = ...,
+                *conditions: Union[str, bool],
+                reason: str = ...,
+                run: bool = ...,
+                raises: Union[BaseException, Tuple[BaseException, ...]] = ...,
+                strict: bool = ...) -> MarkDecorator:
             raise NotImplementedError()
 
     class _ParametrizeMarkDecorator(MarkDecorator):
         def __call__(  # type: ignore[override]
-            self,
-            argnames: Union[str, List[str], Tuple[str, ...]],
-            argvalues: Iterable[Union[ParameterSet, Sequence[object], object]],
-            *,
-            indirect: Union[bool, Sequence[str]] = ...,
-            ids: Optional[
-                Union[
-                    Iterable[Union[None, str, float, int, bool]],
-                    Callable[[object], Optional[object]],
-                ]
-            ] = ...,
-            scope: Optional[_Scope] = ...
-        ) -> MarkDecorator:
+                self,
+                argnames: Union[str, List[str], Tuple[str, ...]],
+                argvalues: Iterable[Union[ParameterSet, Sequence[object],
+                                          object]],
+                *,
+                indirect: Union[bool, Sequence[str]] = ...,
+                ids: Optional[Union[Iterable[Union[None, str, float, int,
+                                                   bool]],
+                                    Callable[[object],
+                                             Optional[object]], ]] = ...,
+                scope: Optional[_Scope] = ...) -> MarkDecorator:
             raise NotImplementedError()
 
     class _UsefixturesMarkDecorator(MarkDecorator):
         def __call__(  # type: ignore[override]
-            self, *fixtures: str
-        ) -> MarkDecorator:
+                self, *fixtures: str) -> MarkDecorator:
             raise NotImplementedError()
 
     class _FilterwarningsMarkDecorator(MarkDecorator):
         def __call__(  # type: ignore[override]
-            self, *filters: str
-        ) -> MarkDecorator:
+                self, *filters: str) -> MarkDecorator:
             raise NotImplementedError()
 
 
@@ -498,14 +491,16 @@ class MarkGenerator:
             if name not in self._markers:
                 if self._config.option.strict_markers:
                     fail(
-                        "{!r} not found in `markers` configuration option".format(name),
+                        "{!r} not found in `markers` configuration option".
+                        format(name),
                         pytrace=False,
                     )
 
                 # Raise a specific error for common misspellings of "parametrize".
                 if name in ["parameterize", "parametrise", "parameterise"]:
                     __tracebackhide__ = True
-                    fail("Unknown '{}' mark, did you mean 'parametrize'?".format(name))
+                    fail("Unknown '{}' mark, did you mean 'parametrize'?".
+                         format(name))
 
                 warnings.warn(
                     "Unknown pytest.mark.%s - is this a typo?  You can register "

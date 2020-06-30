@@ -43,7 +43,6 @@ if TYPE_CHECKING:
     from _pytest.warning_types import PytestWarning
     from _pytest._code.code import _TracebackStyle
 
-
 SEP = "/"
 
 tracebackcutdir = py.path.local(_pytest.__file__).dirpath()
@@ -84,7 +83,7 @@ def ischildnode(baseid: str, nodeid: str) -> bool:
     node_parts = _splitnode(nodeid)
     if len(node_parts) < len(base_parts):
         return False
-    return node_parts[: len(base_parts)] == base_parts
+    return node_parts[:len(base_parts)] == base_parts
 
 
 _NodeType = TypeVar("_NodeType", bound="Node")
@@ -92,7 +91,8 @@ _NodeType = TypeVar("_NodeType", bound="Node")
 
 class NodeMeta(type):
     def __call__(self, *k, **kw):
-        warnings.warn(NODE_USE_FROM_PARENT.format(name=self.__name__), stacklevel=2)
+        warnings.warn(NODE_USE_FROM_PARENT.format(name=self.__name__),
+                      stacklevel=2)
         return super().__call__(*k, **kw)
 
     def _create(self, *k, **kw):
@@ -117,13 +117,13 @@ class Node(metaclass=NodeMeta):
     )
 
     def __init__(
-        self,
-        name: str,
-        parent: "Optional[Node]" = None,
-        config: Optional[Config] = None,
-        session: "Optional[Session]" = None,
-        fspath: Optional[py.path.local] = None,
-        nodeid: Optional[str] = None,
+            self,
+            name: str,
+            parent: "Optional[Node]" = None,
+            config: Optional[Config] = None,
+            session: "Optional[Session]" = None,
+            fspath: Optional[py.path.local] = None,
+            nodeid: Optional[str] = None,
     ) -> None:
         #: a unique name within the scope of the parent node
         self.name = name
@@ -200,7 +200,8 @@ class Node(metaclass=NodeMeta):
         return self.session.gethookproxy(self.fspath)
 
     def __repr__(self) -> str:
-        return "<{} {}>".format(self.__class__.__name__, getattr(self, "name", None))
+        return "<{} {}>".format(self.__class__.__name__,
+                                getattr(self, "name", None))
 
     def warn(self, warning: "PytestWarning") -> None:
         """Issue a warning for this item.
@@ -222,14 +223,15 @@ class Node(metaclass=NodeMeta):
 
         if not isinstance(warning, PytestWarning):
             raise ValueError(
-                "warning must be an instance of PytestWarning or subclass, got {!r}".format(
-                    warning
-                )
-            )
+                "warning must be an instance of PytestWarning or subclass, got {!r}"
+                .format(warning))
         path, lineno = get_fslocation_from_item(self)
         assert lineno is not None
         warnings.warn_explicit(
-            warning, category=None, filename=str(path), lineno=lineno + 1,
+            warning,
+            category=None,
+            filename=str(path),
+            lineno=lineno + 1,
         )
 
     # methods for ordering nodes
@@ -258,9 +260,9 @@ class Node(metaclass=NodeMeta):
         chain.reverse()
         return chain
 
-    def add_marker(
-        self, marker: Union[str, MarkDecorator], append: bool = True
-    ) -> None:
+    def add_marker(self,
+                   marker: Union[str, MarkDecorator],
+                   append: bool = True) -> None:
         """dynamically add a marker object to the node.
 
         :type marker: ``str`` or ``pytest.mark.*``  object
@@ -290,9 +292,9 @@ class Node(metaclass=NodeMeta):
         """
         return (x[1] for x in self.iter_markers_with_node(name=name))
 
-    def iter_markers_with_node(
-        self, name: Optional[str] = None
-    ) -> Iterator[Tuple["Node", Mark]]:
+    def iter_markers_with_node(self,
+                               name: Optional[str] = None
+                               ) -> Iterator[Tuple["Node", Mark]]:
         """
         :param name: if given, filter the results by the name attribute
 
@@ -309,12 +311,12 @@ class Node(metaclass=NodeMeta):
         raise NotImplementedError()
 
     @overload  # noqa: F811
-    def get_closest_marker(self, name: str, default: Mark) -> Mark:  # noqa: F811
+    def get_closest_marker(self, name: str,
+                           default: Mark) -> Mark:  # noqa: F811
         raise NotImplementedError()
 
     def get_closest_marker(  # noqa: F811
-        self, name: str, default: Optional[Mark] = None
-    ) -> Optional[Mark]:
+            self, name: str, default: Optional[Mark] = None) -> Optional[Mark]:
         """return the first marker matching the name, from closest (for example function) to farther level (for example
         module level).
 
@@ -354,9 +356,9 @@ class Node(metaclass=NodeMeta):
         pass
 
     def _repr_failure_py(
-        self,
-        excinfo: ExceptionInfo[BaseException],
-        style: "Optional[_TracebackStyle]" = None,
+            self,
+            excinfo: ExceptionInfo[BaseException],
+            style: "Optional[_TracebackStyle]" = None,
     ) -> TerminalRepr:
         if isinstance(excinfo.value, ConftestImportFailure):
             excinfo = ExceptionInfo(excinfo.value.excinfo)
@@ -393,7 +395,8 @@ class Node(metaclass=NodeMeta):
         # It will be better to just always display paths relative to invocation_dir, but
         # this requires a lot of plumbing (#6428).
         try:
-            abspath = Path(os.getcwd()) != Path(str(self.config.invocation_dir))
+            abspath = Path(os.getcwd()) != Path(str(
+                self.config.invocation_dir))
         except OSError:
             abspath = True
 
@@ -420,8 +423,7 @@ class Node(metaclass=NodeMeta):
 
 
 def get_fslocation_from_item(
-    node: "Node",
-) -> Tuple[Union[str, py.path.local], Optional[int]]:
+        node: "Node", ) -> Tuple[Union[str, py.path.local], Optional[int]]:
     """Tries to extract the actual location from a node, depending on available attributes:
 
     * "location": a pair (path, lineno)
@@ -431,9 +433,8 @@ def get_fslocation_from_item(
     :rtype: a tuple of (str|LocalPath, int) with filename and line number.
     """
     # See Item.location.
-    location = getattr(
-        node, "location", None
-    )  # type: Optional[Tuple[str, Optional[int], str]]
+    location = getattr(node, "location",
+                       None)  # type: Optional[Tuple[str, Optional[int], str]]
     if location is not None:
         return location[:2]
     obj = getattr(node, "obj", None)
@@ -446,7 +447,6 @@ class Collector(Node):
     """ Collector instances create children through collect()
         and thus iteratively build a tree.
     """
-
     class CollectError(Exception):
         """ an error during collection, contains a custom message. """
 
@@ -458,16 +458,16 @@ class Collector(Node):
 
     # TODO: This omits the style= parameter which breaks Liskov Substitution.
     def repr_failure(  # type: ignore[override] # noqa: F821
-        self, excinfo: ExceptionInfo[BaseException]
-    ) -> Union[str, TerminalRepr]:
+            self,
+            excinfo: ExceptionInfo[BaseException]) -> Union[str, TerminalRepr]:
         """
         Return a representation of a collection failure.
 
         :param excinfo: Exception information for the failure.
         """
-        if isinstance(excinfo.value, self.CollectError) and not self.config.getoption(
-            "fulltrace", False
-        ):
+        if isinstance(excinfo.value,
+                      self.CollectError) and not self.config.getoption(
+                          "fulltrace", False):
             exc = excinfo.value
             return str(exc.args[0])
 
@@ -507,12 +507,12 @@ class FSHookProxy:
 
 class FSCollector(Collector):
     def __init__(
-        self,
-        fspath: py.path.local,
-        parent=None,
-        config: Optional[Config] = None,
-        session: Optional["Session"] = None,
-        nodeid: Optional[str] = None,
+            self,
+            fspath: py.path.local,
+            parent=None,
+            config: Optional[Config] = None,
+            session: Optional["Session"] = None,
+            nodeid: Optional[str] = None,
     ) -> None:
         name = fspath.basename
         if parent is not None:
@@ -532,7 +532,12 @@ class FSCollector(Collector):
             if nodeid and os.sep != SEP:
                 nodeid = nodeid.replace(os.sep, SEP)
 
-        super().__init__(name, parent, config, session, nodeid=nodeid, fspath=fspath)
+        super().__init__(name,
+                         parent,
+                         config,
+                         session,
+                         nodeid=nodeid,
+                         fspath=fspath)
 
         self._norecursepatterns = self.config.getini("norecursedirs")
 
@@ -548,8 +553,7 @@ class FSCollector(Collector):
         # hooks with all conftest.py files
         pm = self.config.pluginmanager
         my_conftestmodules = pm._getconftestmodules(
-            fspath, self.config.getoption("importmode")
-        )
+            fspath, self.config.getoption("importmode"))
         remove_mods = pm._conftest_plugins.difference(my_conftestmodules)
         if remove_mods:
             # one or more conftests are not in use at this fspath
@@ -578,14 +582,12 @@ class FSCollector(Collector):
     def isinitpath(self, path: py.path.local) -> bool:
         raise NotImplementedError()
 
-    def _collectfile(
-        self, path: py.path.local, handle_dupes: bool = True
-    ) -> Sequence[Collector]:
-        assert (
-            path.isfile()
-        ), "{!r} is not a file (isdir={!r}, exists={!r}, islink={!r})".format(
-            path, path.isdir(), path.exists(), path.islink()
-        )
+    def _collectfile(self,
+                     path: py.path.local,
+                     handle_dupes: bool = True) -> Sequence[Collector]:
+        assert (path.isfile(
+        )), "{!r} is not a file (isdir={!r}, exists={!r}, islink={!r})".format(
+            path, path.isdir(), path.exists(), path.islink())
         ihook = self.gethookproxy(path)
         if not self.isinitpath(path):
             if ihook.pytest_ignore_collect(path=path, config=self.config):
@@ -600,7 +602,8 @@ class FSCollector(Collector):
                 else:
                     duplicate_paths.add(path)
 
-        return ihook.pytest_collect_file(path=path, parent=self)  # type: ignore[no-any-return] # noqa: F723
+        return ihook.pytest_collect_file(
+            path=path, parent=self)  # type: ignore[no-any-return] # noqa: F723
 
 
 class File(FSCollector):
@@ -615,12 +618,12 @@ class Item(Node):
     nextitem = None
 
     def __init__(
-        self,
-        name,
-        parent=None,
-        config: Optional[Config] = None,
-        session: Optional["Session"] = None,
-        nodeid: Optional[str] = None,
+            self,
+            name,
+            parent=None,
+            config: Optional[Config] = None,
+            session: Optional["Session"] = None,
+            nodeid: Optional[str] = None,
     ) -> None:
         super().__init__(name, parent, config, session, nodeid=nodeid)
         self._report_sections = []  # type: List[Tuple[str, str, str]]
@@ -630,7 +633,8 @@ class Item(Node):
         self.user_properties = []  # type: List[Tuple[str, object]]
 
     def runtest(self) -> None:
-        raise NotImplementedError("runtest must be implemented by Item subclass")
+        raise NotImplementedError(
+            "runtest must be implemented by Item subclass")
 
     def add_report_section(self, when: str, key: str, content: str) -> None:
         """
@@ -651,7 +655,8 @@ class Item(Node):
         if content:
             self._report_sections.append((when, key, content))
 
-    def reportinfo(self) -> Tuple[Union[py.path.local, str], Optional[int], str]:
+    def reportinfo(
+            self) -> Tuple[Union[py.path.local, str], Optional[int], str]:
         return self.fspath, None, ""
 
     @cached_property

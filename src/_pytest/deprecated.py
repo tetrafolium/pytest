@@ -22,8 +22,7 @@ DEPRECATED_EXTERNAL_PLUGINS = {
 
 FUNCARGNAMES = PytestDeprecationWarning(
     "The `funcargnames` attribute was an alias for `fixturenames`, "
-    "since pytest 2.3 - use the newer attribute instead."
-)
+    "since pytest 2.3 - use the newer attribute instead.")
 
 FILLFUNCARGS = PytestDeprecationWarning(
     "The `_fillfuncargs` function is deprecated, use "
@@ -37,8 +36,7 @@ RESULT_LOG = PytestDeprecationWarning(
 
 FIXTURE_POSITIONAL_ARGUMENTS = PytestDeprecationWarning(
     "Passing arguments to pytest.fixture() as positional arguments is deprecated - pass them "
-    "as a keyword argument instead."
-)
+    "as a keyword argument instead.")
 
 NODE_USE_FROM_PARENT = UnformattedWarning(
     PytestDeprecationWarning,
@@ -51,13 +49,11 @@ NODE_USE_FROM_PARENT = UnformattedWarning(
 JUNIT_XML_DEFAULT_FAMILY = PytestDeprecationWarning(
     "The 'junit_family' default value will change to 'xunit2' in pytest 6.0. See:\n"
     "  https://docs.pytest.org/en/latest/deprecations.html#junit-family-default-value-change-to-xunit2\n"
-    "for more information."
-)
+    "for more information.")
 
 COLLECT_DIRECTORY_HOOK = PytestDeprecationWarning(
     "The pytest_collect_directory hook is not working.\n"
-    "Please use collect_ignore in conftests or pytest_collection_modifyitems."
-)
+    "Please use collect_ignore in conftests or pytest_collection_modifyitems.")
 
 PYTEST_COLLECT_MODULE = UnformattedWarning(
     PytestDeprecationWarning,
@@ -65,12 +61,10 @@ PYTEST_COLLECT_MODULE = UnformattedWarning(
     "Please update to the new name.",
 )
 
-
 TERMINALWRITER_WRITER = PytestDeprecationWarning(
     "The TerminalReporter.writer attribute is deprecated, use TerminalReporter._tw instead at your own risk.\n"
     "See https://docs.pytest.org/en/latest/deprecations.html#terminalreporter-writer for more information."
 )
-
 
 MINUS_K_DASH = PytestDeprecationWarning(
     "The `-k '-expr'` syntax to -k is deprecated.\nUse `-k 'not expr'` instead."
@@ -78,10 +72,8 @@ MINUS_K_DASH = PytestDeprecationWarning(
 
 MINUS_K_COLON = PytestDeprecationWarning(
     "The `-k 'expr:'` syntax to -k is deprecated.\n"
-    "Please open an issue if you use this and want a replacement."
-)
+    "Please open an issue if you use this and want a replacement.")
 
 WARNING_CAPTURED_HOOK = PytestDeprecationWarning(
     "The pytest_warning_captured is deprecated and will be removed in a future release.\n"
-    "Please use pytest_warning_recorded instead."
-)
+    "Please use pytest_warning_recorded instead.")

@@ -42,16 +42,15 @@ class TempPathFactory:
         """
         :param config: a pytest configuration
         """
-        return cls(
-            given_basetemp=config.option.basetemp, trace=config.trace.get("tmpdir")
-        )
+        return cls(given_basetemp=config.option.basetemp,
+                   trace=config.trace.get("tmpdir"))
 
     def _ensure_relative_to_basetemp(self, basename: str):
         basename = os.path.normpath(basename)
-        if (self.getbasetemp() / basename).resolve().parent != self.getbasetemp():
+        if (self.getbasetemp() /
+                basename).resolve().parent != self.getbasetemp():
             raise ValueError(
-                "{} is not a normalized and relative path".format(basename)
-            )
+                "{} is not a normalized and relative path".format(basename))
         return basename
 
     def mktemp(self, basename: str, numbered: bool = True) -> Path:
@@ -96,8 +95,10 @@ class TempPathFactory:
             rootdir = temproot.joinpath("pytest-of-{}".format(user))
             rootdir.mkdir(exist_ok=True)
             basetemp = make_numbered_dir_with_cleanup(
-                prefix="pytest-", root=rootdir, keep=3, lock_timeout=LOCK_TIMEOUT
-            )
+                prefix="pytest-",
+                root=rootdir,
+                keep=3,
+                lock_timeout=LOCK_TIMEOUT)
         assert basetemp is not None, basetemp
         self._basetemp = t = basetemp
         self._trace("new basetemp", t)
@@ -117,7 +118,8 @@ class TempdirFactory:
         """
         Same as :meth:`TempPathFactory.mkdir`, but returns a ``py.path.local`` object.
         """
-        return py.path.local(self._tmppath_factory.mktemp(basename, numbered).resolve())
+        return py.path.local(
+            self._tmppath_factory.mktemp(basename, numbered).resolve())
 
     def getbasetemp(self):
         """backward compat wrapper for ``_tmppath_factory.getbasetemp``"""
@@ -189,7 +191,8 @@ def tmpdir(tmp_path):
 
 
 @pytest.fixture
-def tmp_path(request: FixtureRequest, tmp_path_factory: TempPathFactory) -> Path:
+def tmp_path(request: FixtureRequest,
+             tmp_path_factory: TempPathFactory) -> Path:
     """Return a temporary directory path object
     which is unique to each test function invocation,
     created as a sub directory of the base temporary

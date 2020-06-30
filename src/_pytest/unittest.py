@@ -37,15 +37,13 @@ if TYPE_CHECKING:
 
     from _pytest.fixtures import _Scope
 
-    _SysExcInfoType = Union[
-        Tuple[Type[BaseException], BaseException, types.TracebackType],
-        Tuple[None, None, None],
-    ]
+    _SysExcInfoType = Union[Tuple[Type[BaseException], BaseException,
+                                  types.TracebackType], Tuple[None, None,
+                                                              None], ]
 
 
-def pytest_pycollect_makeitem(
-    collector: PyCollector, name: str, obj: object
-) -> Optional["UnitTestCase"]:
+def pytest_pycollect_makeitem(collector: PyCollector, name: str,
+                              obj: object) -> Optional["UnitTestCase"]:
     # has unittest been imported and is obj a subclass of its TestCase?
     try:
         ut = sys.modules["unittest"]
@@ -55,7 +53,8 @@ def pytest_pycollect_makeitem(
     except Exception:
         return None
     # yes, so let's collect it
-    item = UnitTestCase.from_parent(collector, name=name, obj=obj)  # type: UnitTestCase
+    item = UnitTestCase.from_parent(collector, name=name,
+                                    obj=obj)  # type: UnitTestCase
     return item
 
 
@@ -84,7 +83,9 @@ class UnitTestCase(Class):
             if not getattr(x, "__test__", True):
                 continue
             funcobj = getimfunc(x)
-            yield TestCaseFunction.from_parent(self, name=name, callobj=funcobj)
+            yield TestCaseFunction.from_parent(self,
+                                               name=name,
+                                               callobj=funcobj)
             foundsomething = True
 
         if not foundsomething:
@@ -98,22 +99,25 @@ class UnitTestCase(Class):
     def _inject_setup_teardown_fixtures(self, cls: type) -> None:
         """Injects a hidden auto-use fixture to invoke setUpClass/setup_method and corresponding
         teardown functions (#517)"""
-        class_fixture = _make_xunit_fixture(
-            cls, "setUpClass", "tearDownClass", scope="class", pass_self=False
-        )
+        class_fixture = _make_xunit_fixture(cls,
+                                            "setUpClass",
+                                            "tearDownClass",
+                                            scope="class",
+                                            pass_self=False)
         if class_fixture:
             cls.__pytest_class_setup = class_fixture  # type: ignore[attr-defined] # noqa: F821
 
-        method_fixture = _make_xunit_fixture(
-            cls, "setup_method", "teardown_method", scope="function", pass_self=True
-        )
+        method_fixture = _make_xunit_fixture(cls,
+                                             "setup_method",
+                                             "teardown_method",
+                                             scope="function",
+                                             pass_self=True)
         if method_fixture:
             cls.__pytest_method_setup = method_fixture  # type: ignore[attr-defined] # noqa: F821
 
 
-def _make_xunit_fixture(
-    obj: type, setup_name: str, teardown_name: str, scope: "_Scope", pass_self: bool
-):
+def _make_xunit_fixture(obj: type, setup_name: str, teardown_name: str,
+                        scope: "_Scope", pass_self: bool):
     setup = getattr(obj, setup_name, None)
     teardown = getattr(obj, teardown_name, None)
     if setup is None and teardown is None:
@@ -148,7 +152,8 @@ class TestCaseFunction(Function):
         # a bound method to be called during teardown() if set (see 'runtest()')
         self._explicit_tearDown = None  # type: Optional[Callable[[], None]]
         assert self.parent is not None
-        self._testcase = self.parent.obj(self.name)  # type: ignore[attr-defined] # noqa: F821
+        self._testcase = self.parent.obj(
+            self.name)  # type: ignore[attr-defined] # noqa: F821
         self._obj = getattr(self._testcase, self.name)
         if hasattr(self, "_request"):
             self._request._fillfixtures()
@@ -167,7 +172,8 @@ class TestCaseFunction(Function):
         # unwrap potential exception info (see twisted trial support below)
         rawexcinfo = getattr(rawexcinfo, "_rawexcinfo", rawexcinfo)
         try:
-            excinfo = _pytest._code.ExceptionInfo(rawexcinfo)  # type: ignore[arg-type] # noqa: F821
+            excinfo = _pytest._code.ExceptionInfo(
+                rawexcinfo)  # type: ignore[arg-type] # noqa: F821
             # invoke the attributes to trigger storing the traceback
             # trial causes some issue there
             excinfo.value
@@ -187,7 +193,7 @@ class TestCaseFunction(Function):
                 except BaseException:
                     fail(
                         "ERROR: Unknown Incompatible Exception "
-                        "representation:\n%r" % (rawexcinfo,),
+                        "representation:\n%r" % (rawexcinfo, ),
                         pytrace=False,
                     )
             except KeyboardInterrupt:
@@ -196,9 +202,8 @@ class TestCaseFunction(Function):
                 excinfo = _pytest._code.ExceptionInfo.from_current()
         self.__dict__.setdefault("_excinfo", []).append(excinfo)
 
-    def addError(
-        self, testcase: "unittest.TestCase", rawexcinfo: "_SysExcInfoType"
-    ) -> None:
+    def addError(self, testcase: "unittest.TestCase",
+                 rawexcinfo: "_SysExcInfoType") -> None:
         try:
             if isinstance(rawexcinfo[1], exit.Exception):
                 exit(rawexcinfo[1].msg)
@@ -206,9 +211,8 @@ class TestCaseFunction(Function):
             pass
         self._addexcinfo(rawexcinfo)
 
-    def addFailure(
-        self, testcase: "unittest.TestCase", rawexcinfo: "_SysExcInfoType"
-    ) -> None:
+    def addFailure(self, testcase: "unittest.TestCase",
+                   rawexcinfo: "_SysExcInfoType") -> None:
         self._addexcinfo(rawexcinfo)
 
     def addSkip(self, testcase: "unittest.TestCase", reason: str) -> None:
@@ -219,19 +223,19 @@ class TestCaseFunction(Function):
             self._addexcinfo(sys.exc_info())
 
     def addExpectedFailure(
-        self,
-        testcase: "unittest.TestCase",
-        rawexcinfo: "_SysExcInfoType",
-        reason: str = "",
+            self,
+            testcase: "unittest.TestCase",
+            rawexcinfo: "_SysExcInfoType",
+            reason: str = "",
     ) -> None:
         try:
             xfail(str(reason))
         except xfail.Exception:
             self._addexcinfo(sys.exc_info())
 
-    def addUnexpectedSuccess(
-        self, testcase: "unittest.TestCase", reason: str = ""
-    ) -> None:
+    def addUnexpectedSuccess(self,
+                             testcase: "unittest.TestCase",
+                             reason: str = "") -> None:
         self._store[unexpectedsuccess_key] = reason
 
     def addSuccess(self, testcase: "unittest.TestCase") -> None:
@@ -243,10 +247,12 @@ class TestCaseFunction(Function):
     def _expecting_failure(self, test_method) -> bool:
         """Return True if the given unittest method (or the entire class) is marked
         with @expectedFailure"""
-        expecting_failure_method = getattr(
-            test_method, "__unittest_expecting_failure__", False
-        )
-        expecting_failure_class = getattr(self, "__unittest_expecting_failure__", False)
+        expecting_failure_method = getattr(test_method,
+                                           "__unittest_expecting_failure__",
+                                           False)
+        expecting_failure_class = getattr(self,
+                                          "__unittest_expecting_failure__",
+                                          False)
         return bool(expecting_failure_class or expecting_failure_method)
 
     def runtest(self) -> None:
@@ -275,15 +281,15 @@ class TestCaseFunction(Function):
             # wrap_pytest_function_for_tracing replaces self.obj by a wrapper
             setattr(self._testcase, self.name, self.obj)
             try:
-                self._testcase(result=self)  # type: ignore[arg-type] # noqa: F821
+                self._testcase(
+                    result=self)  # type: ignore[arg-type] # noqa: F821
             finally:
                 delattr(self._testcase, self.name)
 
     def _prunetraceback(self, excinfo: _pytest._code.ExceptionInfo) -> None:
         Function._prunetraceback(self, excinfo)
         traceback = excinfo.traceback.filter(
-            lambda x: not x.frame.f_globals.get("__unittest")
-        )
+            lambda x: not x.frame.f_globals.get("__unittest"))
         if traceback:
             excinfo.traceback = traceback
 
@@ -299,18 +305,13 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> None:
                 pass
 
     unittest = sys.modules.get("unittest")
-    if (
-        unittest
-        and call.excinfo
-        and call.excinfo.errisinstance(
+    if (unittest and call.excinfo and call.excinfo.errisinstance(
             unittest.SkipTest  # type: ignore[attr-defined] # noqa: F821
-        )
-    ):
+    )):
         excinfo = call.excinfo
         # let's substitute the excinfo with a pytest.skip one
         call2 = CallInfo[None].from_call(
-            lambda: pytest.skip(str(excinfo.value)), call.when
-        )
+            lambda: pytest.skip(str(excinfo.value)), call.when)
         call.excinfo = call2.excinfo
 
 
@@ -319,14 +320,18 @@ def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> None:
 
 @hookimpl(hookwrapper=True)
 def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:
-    if isinstance(item, TestCaseFunction) and "twisted.trial.unittest" in sys.modules:
+    if isinstance(
+            item,
+            TestCaseFunction) and "twisted.trial.unittest" in sys.modules:
         ut = sys.modules["twisted.python.failure"]  # type: Any
         Failure__init__ = ut.Failure.__init__
         check_testcase_implements_trial_reporter()
 
-        def excstore(
-            self, exc_value=None, exc_type=None, exc_tb=None, captureVars=None
-        ):
+        def excstore(self,
+                     exc_value=None,
+                     exc_type=None,
+                     exc_tb=None,
+                     captureVars=None):
             if exc_value is None:
                 self._rawexcinfo = sys.exc_info()
             else:
@@ -334,9 +339,11 @@ def pytest_runtest_protocol(item: Item) -> Generator[None, None, None]:
                     exc_type = type(exc_value)
                 self._rawexcinfo = (exc_type, exc_value, exc_tb)
             try:
-                Failure__init__(
-                    self, exc_value, exc_type, exc_tb, captureVars=captureVars
-                )
+                Failure__init__(self,
+                                exc_value,
+                                exc_type,
+                                exc_tb,
+                                captureVars=captureVars)
             except TypeError:
                 Failure__init__(self, exc_value, exc_type, exc_tb)
 

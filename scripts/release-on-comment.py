@@ -75,8 +75,7 @@ def get_comment_data(payload: Dict) -> str:
 
 
 def validate_and_get_issue_comment_payload(
-    issue_payload_path: Optional[Path],
-) -> Tuple[str, str]:
+        issue_payload_path: Optional[Path], ) -> Tuple[str, str]:
     payload = json.loads(issue_payload_path.read_text(encoding="UTF-8"))
     body = get_comment_data(payload)["body"]
     m = re.match(r"@pytestbot please prepare release from ([\w\-_\.]+)", body)
@@ -145,7 +144,10 @@ def trigger_release(payload_path: Path, token: str) -> None:
         print(f"Branch {Fore.CYAN}{release_branch}{Fore.RESET} created.")
 
         run(
-            [sys.executable, "scripts/release.py", version, "--skip-check-links"],
+            [
+                sys.executable, "scripts/release.py", version,
+                "--skip-check-links"
+            ],
             text=True,
             check=True,
             capture_output=True,
@@ -161,8 +163,7 @@ def trigger_release(payload_path: Path, token: str) -> None:
         print(f"Branch {Fore.CYAN}{release_branch}{Fore.RESET} pushed.")
 
         body = PR_BODY.format(
-            comment_url=get_comment_data(payload)["html_url"], version=version
-        )
+            comment_url=get_comment_data(payload)["html_url"], version=version)
         pr = repo.create_pull(
             f"Prepare release {version}",
             base=base_branch,
@@ -174,7 +175,9 @@ def trigger_release(payload_path: Path, token: str) -> None:
         comment = issue.create_comment(
             f"As requested, opened a PR for release `{version}`: #{pr.number}."
         )
-        print(f"Notified in original comment {Fore.CYAN}{comment.url}{Fore.RESET}.")
+        print(
+            f"Notified in original comment {Fore.CYAN}{comment.url}{Fore.RESET}."
+        )
 
         print(f"{Fore.GREEN}Success.")
     except CalledProcessError as e:
@@ -183,8 +186,7 @@ def trigger_release(payload_path: Path, token: str) -> None:
         error_contents = str(e)
         link = f"https://github.com/{SLUG}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
         issue.create_comment(
-            dedent(
-                f"""
+            dedent(f"""
             Sorry, the request to prepare release `{version}` from {base_branch} failed with:
 
             ```
@@ -192,16 +194,13 @@ def trigger_release(payload_path: Path, token: str) -> None:
             ```
 
             See: {link}.
-            """
-            )
-        )
+            """))
         print_and_exit(f"{Fore.RED}{e}")
 
     if error_contents:
         link = f"https://github.com/{SLUG}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
         issue.create_comment(
-            dedent(
-                f"""
+            dedent(f"""
                 Sorry, the request to prepare release `{version}` from {base_branch} failed with:
 
                 ```
@@ -209,9 +208,7 @@ def trigger_release(payload_path: Path, token: str) -> None:
                 ```
 
                 See: {link}.
-                """
-            )
-        )
+                """))
         print_and_exit(f"{Fore.RED}{error_contents}")
 
 
@@ -233,12 +230,10 @@ def find_next_version(base_branch: str) -> str:
     is_feature_release = features or breaking
 
     if is_feature_release and base_branch != "master":
-        msg = dedent(
-            f"""
+        msg = dedent(f"""
             Found features or breaking changes in `{base_branch}`, and feature releases can only be
             created from `master`.":
-        """
-        )
+        """)
         msg += "\n".join(f"* `{x.name}`" for x in sorted(features + breaking))
         raise InvalidFeatureRelease(msg)
 

@@ -80,10 +80,10 @@ def pytest_terminal_summary(terminalreporter: "TerminalReporter") -> None:
             tr.write_line("")
             tr.write_line(
                 "(%s durations < 0.005s hidden.  Use -vv to show these durations.)"
-                % (len(dlist) - i)
-            )
+                % (len(dlist) - i))
             break
-        tr.write_line("{:02.2f}s {:<8} {}".format(rep.duration, rep.when, rep.nodeid))
+        tr.write_line("{:02.2f}s {:<8} {}".format(rep.duration, rep.when,
+                                                  rep.nodeid))
 
 
 def pytest_sessionstart(session: "Session") -> None:
@@ -102,9 +102,9 @@ def pytest_runtest_protocol(item: Item, nextitem: Optional[Item]) -> bool:
     return True
 
 
-def runtestprotocol(
-    item: Item, log: bool = True, nextitem: Optional[Item] = None
-) -> List[TestReport]:
+def runtestprotocol(item: Item,
+                    log: bool = True,
+                    nextitem: Optional[Item] = None) -> List[TestReport]:
     hasrequest = hasattr(item, "_request")
     if hasrequest and not item._request:  # type: ignore[attr-defined] # noqa: F821
         item._initrequest()  # type: ignore[attr-defined] # noqa: F821
@@ -168,8 +168,8 @@ def pytest_runtest_teardown(item: Item, nextitem: Optional[Item]) -> None:
 
 
 def _update_current_test_var(
-    item: Item, when: Optional["Literal['setup', 'call', 'teardown']"]
-) -> None:
+        item: Item,
+        when: Optional["Literal['setup', 'call', 'teardown']"]) -> None:
     """
     Update :envvar:`PYTEST_CURRENT_TEST` to reflect the current item and stage.
 
@@ -185,7 +185,8 @@ def _update_current_test_var(
         os.environ.pop(var_name)
 
 
-def pytest_report_teststatus(report: BaseReport) -> Optional[Tuple[str, str, str]]:
+def pytest_report_teststatus(
+        report: BaseReport) -> Optional[Tuple[str, str, str]]:
     if report.when in ("setup", "teardown"):
         if report.failed:
             #      category, shortletter, verbose-word
@@ -201,12 +202,14 @@ def pytest_report_teststatus(report: BaseReport) -> Optional[Tuple[str, str, str
 # Implementation
 
 
-def call_and_report(
-    item: Item, when: "Literal['setup', 'call', 'teardown']", log: bool = True, **kwds
-) -> TestReport:
+def call_and_report(item: Item,
+                    when: "Literal['setup', 'call', 'teardown']",
+                    log: bool = True,
+                    **kwds) -> TestReport:
     call = call_runtest_hook(item, when, **kwds)
     hook = item.ihook
-    report = hook.pytest_runtest_makereport(item=item, call=call)  # type: TestReport
+    report = hook.pytest_runtest_makereport(item=item,
+                                            call=call)  # type: TestReport
     if log:
         hook.pytest_runtest_logreport(report=report)
     if check_interactive_exception(call, report):
@@ -216,15 +219,12 @@ def call_and_report(
 
 def check_interactive_exception(call: "CallInfo", report: BaseReport) -> bool:
     return call.excinfo is not None and not (
-        hasattr(report, "wasxfail")
-        or call.excinfo.errisinstance(Skipped)
-        or call.excinfo.errisinstance(bdb.BdbQuit)
-    )
+        hasattr(report, "wasxfail") or call.excinfo.errisinstance(Skipped)
+        or call.excinfo.errisinstance(bdb.BdbQuit))
 
 
-def call_runtest_hook(
-    item: Item, when: "Literal['setup', 'call', 'teardown']", **kwds
-) -> "CallInfo[None]":
+def call_runtest_hook(item: Item, when: "Literal['setup', 'call', 'teardown']",
+                      **kwds) -> "CallInfo[None]":
     if when == "setup":
         ihook = item.ihook.pytest_runtest_setup  # type: Callable[..., None]
     elif when == "call":
@@ -233,12 +233,12 @@ def call_runtest_hook(
         ihook = item.ihook.pytest_runtest_teardown
     else:
         assert False, "Unhandled runtest hook case: {}".format(when)
-    reraise = (Exit,)  # type: Tuple[Type[BaseException], ...]
+    reraise = (Exit, )  # type: Tuple[Type[BaseException], ...]
     if not item.config.getoption("usepdb", False):
-        reraise += (KeyboardInterrupt,)
-    return CallInfo.from_call(
-        lambda: ihook(item=item, **kwds), when=when, reraise=reraise
-    )
+        reraise += (KeyboardInterrupt, )
+    return CallInfo.from_call(lambda: ihook(item=item, **kwds),
+                              when=when,
+                              reraise=reraise)
 
 
 _T = TypeVar("_T")
@@ -278,7 +278,8 @@ class CallInfo(Generic[_T]):
         cls,
         func: "Callable[[], _T]",
         when: "Literal['collect', 'setup', 'call', 'teardown']",
-        reraise: "Optional[Union[Type[BaseException], Tuple[Type[BaseException], ...]]]" = None,
+        reraise:
+        "Optional[Union[Type[BaseException], Tuple[Type[BaseException], ...]]]" = None,
     ) -> "CallInfo[_T]":
         excinfo = None
         start = timing.time()
@@ -305,8 +306,10 @@ class CallInfo(Generic[_T]):
 
     def __repr__(self) -> str:
         if self.excinfo is None:
-            return "<CallInfo when={!r} result: {!r}>".format(self.when, self._result)
-        return "<CallInfo when={!r} excinfo={!r}>".format(self.when, self.excinfo)
+            return "<CallInfo when={!r} result: {!r}>".format(
+                self.when, self._result)
+        return "<CallInfo when={!r} excinfo={!r}>".format(
+            self.when, self.excinfo)
 
 
 def pytest_runtest_makereport(item: Item, call: CallInfo[None]) -> TestReport:
@@ -346,7 +349,6 @@ def pytest_make_collect_report(collector: Collector) -> CollectReport:
 
 class SetupState:
     """ shared state for setting up/tearing down test items or collectors. """
-
     def __init__(self):
         self.stack = []  # type: List[Node]
         self._finalizers = {}  # type: Dict[Node, List[Callable[[], object]]]
@@ -397,7 +399,7 @@ class SetupState:
     def _teardown_towards(self, needed_collectors) -> None:
         exc = None
         while self.stack:
-            if self.stack == needed_collectors[: len(self.stack)]:
+            if self.stack == needed_collectors[:len(self.stack)]:
                 break
             try:
                 self._pop_and_teardown()
@@ -431,7 +433,8 @@ class SetupState:
 def collect_one_node(collector: Collector) -> CollectReport:
     ihook = collector.ihook
     ihook.pytest_collectstart(collector=collector)
-    rep = ihook.pytest_make_collect_report(collector=collector)  # type: CollectReport
+    rep = ihook.pytest_make_collect_report(
+        collector=collector)  # type: CollectReport
     call = rep.__dict__.pop("call", None)
     if call and check_interactive_exception(call, rep):
         ihook.pytest_exception_interact(node=collector, call=call, report=rep)

@@ -32,7 +32,6 @@ from _pytest.compat import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import NoReturn
 
-
 __all__ = [
     "Expression",
     "ParseError",
@@ -62,7 +61,6 @@ class ParseError(Exception):
     :param column: The column in the line where the error occurred (1-based).
     :param message: A description of the error.
     """
-
     def __init__(self, column: int, message: str) -> None:
         self.column = column
         self.message = message
@@ -104,25 +102,30 @@ class Scanner:
                     pos += len(value)
                 else:
                     raise ParseError(
-                        pos + 1, 'unexpected character "{}"'.format(input[pos]),
+                        pos + 1,
+                        'unexpected character "{}"'.format(input[pos]),
                     )
         yield Token(TokenType.EOF, "", pos)
 
-    def accept(self, type: TokenType, *, reject: bool = False) -> Optional[Token]:
+    def accept(self,
+               type: TokenType,
+               *,
+               reject: bool = False) -> Optional[Token]:
         if self.current.type is type:
             token = self.current
             if token.type is not TokenType.EOF:
                 self.current = next(self.tokens)
             return token
         if reject:
-            self.reject((type,))
+            self.reject((type, ))
         return None
 
     def reject(self, expected: Sequence[TokenType]) -> "NoReturn":
         raise ParseError(
             self.current.pos + 1,
             "expected {}; got {}".format(
-                " OR ".join(type.value for type in expected), self.current.type.value,
+                " OR ".join(type.value for type in expected),
+                self.current.type.value,
             ),
         )
 
@@ -173,7 +176,6 @@ def not_expr(s: Scanner) -> ast.expr:
 
 class MatcherAdapter(Mapping[str, bool]):
     """Adapts a matcher function to a locals mapping as required by eval()."""
-
     def __init__(self, matcher: Callable[[str], bool]) -> None:
         self.matcher = matcher
 
@@ -193,7 +195,7 @@ class Expression:
     The expression can be evaulated against different matchers.
     """
 
-    __slots__ = ("code",)
+    __slots__ = ("code", )
 
     def __init__(self, code: types.CodeType) -> None:
         self.code = code
@@ -206,7 +208,9 @@ class Expression:
         """
         astexpr = expression(Scanner(input))
         code = compile(
-            astexpr, filename="<pytest match expression>", mode="eval",
+            astexpr,
+            filename="<pytest match expression>",
+            mode="eval",
         )  # type: types.CodeType
         return Expression(code)
 
@@ -218,7 +222,6 @@ class Expression:
 
         Returns whether the expression matches or not.
         """
-        ret = eval(
-            self.code, {"__builtins__": {}}, MatcherAdapter(matcher)
-        )  # type: bool
+        ret = eval(self.code, {"__builtins__": {}},
+                   MatcherAdapter(matcher))  # type: bool
         return ret

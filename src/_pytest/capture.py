@@ -111,11 +111,8 @@ def _py36_windowsconsoleio_workaround(stream: TextIO) -> None:
 
     See https://github.com/pytest-dev/py/issues/103
     """
-    if (
-        not sys.platform.startswith("win32")
-        or sys.version_info[:2] < (3, 6)
-        or hasattr(sys, "pypy_version_info")
-    ):
+    if (not sys.platform.startswith("win32") or sys.version_info[:2] < (3, 6)
+            or hasattr(sys, "pypy_version_info")):
         return
 
     # bail out if ``stream`` doesn't seem like a proper ``io`` stream (#2666)
@@ -125,7 +122,8 @@ def _py36_windowsconsoleio_workaround(stream: TextIO) -> None:
     buffered = hasattr(stream.buffer, "raw")
     raw_stdout = stream.buffer.raw if buffered else stream.buffer  # type: ignore[attr-defined]
 
-    if not isinstance(raw_stdout, io._WindowsConsoleIO):  # type: ignore[attr-defined]
+    if not isinstance(raw_stdout,
+                      io._WindowsConsoleIO):  # type: ignore[attr-defined]
         return
 
     def _reopen_stdio(f, mode):
@@ -135,7 +133,8 @@ def _py36_windowsconsoleio_workaround(stream: TextIO) -> None:
             buffering = -1
 
         return io.TextIOWrapper(
-            open(os.dup(f.fileno()), mode, buffering),  # type: ignore[arg-type]
+            open(os.dup(f.fileno()), mode,
+                 buffering),  # type: ignore[arg-type]
             f.encoding,
             f.errors,
             f.newlines,
@@ -192,7 +191,10 @@ class EncodedFile(io.TextIOWrapper):
 
 class CaptureIO(io.TextIOWrapper):
     def __init__(self) -> None:
-        super().__init__(io.BytesIO(), encoding="UTF-8", newline="", write_through=True)
+        super().__init__(io.BytesIO(),
+                         encoding="UTF-8",
+                         newline="",
+                         write_through=True)
 
     def getvalue(self) -> str:
         assert isinstance(self.buffer, io.BytesIO)
@@ -225,7 +227,8 @@ class DontReadFromInput:
         return self
 
     def fileno(self) -> int:
-        raise UnsupportedOperation("redirected stdin is pseudofile, has no fileno()")
+        raise UnsupportedOperation(
+            "redirected stdin is pseudofile, has no fileno()")
 
     def isatty(self) -> bool:
         return False
@@ -239,7 +242,6 @@ class DontReadFromInput:
 
 
 # Capture classes.
-
 
 patchsysdict = {0: "stdin", 1: "stdout", 2: "stderr"}
 
@@ -284,14 +286,12 @@ class SysCaptureBinary:
         )
 
     def _assert_state(self, op: str, states: Tuple[str, ...]) -> None:
-        assert (
-            self._state in states
-        ), "cannot {} in state {!r}: expected one of {}".format(
-            op, self._state, ", ".join(states)
-        )
+        assert (self._state in states
+                ), "cannot {} in state {!r}: expected one of {}".format(
+                    op, self._state, ", ".join(states))
 
     def start(self) -> None:
-        self._assert_state("start", ("initialized",))
+        self._assert_state("start", ("initialized", ))
         setattr(sys, self.name, self.tmpfile)
         self._state = "started"
 
@@ -304,7 +304,8 @@ class SysCaptureBinary:
         return res
 
     def done(self) -> None:
-        self._assert_state("done", ("initialized", "started", "suspended", "done"))
+        self._assert_state("done",
+                           ("initialized", "started", "suspended", "done"))
         if self._state == "done":
             return
         setattr(sys, self.name, self._old)
@@ -371,9 +372,8 @@ class FDCaptureBinary:
             # Further complications are the need to support suspend() and the
             # possibility of FD reuse (e.g. the tmpfile getting the very same
             # target FD). The following approach is robust, I believe.
-            self.targetfd_invalid = os.open(
-                os.devnull, os.O_RDWR
-            )  # type: Optional[int]
+            self.targetfd_invalid = os.open(os.devnull,
+                                            os.O_RDWR)  # type: Optional[int]
             os.dup2(self.targetfd_invalid, targetfd)
         else:
             self.targetfd_invalid = None
@@ -407,15 +407,13 @@ class FDCaptureBinary:
         )
 
     def _assert_state(self, op: str, states: Tuple[str, ...]) -> None:
-        assert (
-            self._state in states
-        ), "cannot {} in state {!r}: expected one of {}".format(
-            op, self._state, ", ".join(states)
-        )
+        assert (self._state in states
+                ), "cannot {} in state {!r}: expected one of {}".format(
+                    op, self._state, ", ".join(states))
 
     def start(self) -> None:
         """ Start capturing on targetfd using memorized tmpfile. """
-        self._assert_state("start", ("initialized",))
+        self._assert_state("start", ("initialized", ))
         os.dup2(self.tmpfile.fileno(), self.targetfd)
         self.syscapture.start()
         self._state = "started"
@@ -431,7 +429,8 @@ class FDCaptureBinary:
     def done(self) -> None:
         """ stop capturing, restore streams, return original capture file,
         seeked to position zero. """
-        self._assert_state("done", ("initialized", "started", "suspended", "done"))
+        self._assert_state("done",
+                           ("initialized", "started", "suspended", "done"))
         if self._state == "done":
             return
         os.dup2(self.targetfd_save, self.targetfd)
@@ -485,7 +484,8 @@ class FDCapture(FDCaptureBinary):
 
     def writeorg(self, data):
         """ write to original file descriptor. """
-        super().writeorg(data.encode("utf-8"))  # XXX use encoding of original stream
+        super().writeorg(
+            data.encode("utf-8"))  # XXX use encoding of original stream
 
 
 # MultiCapture
@@ -504,7 +504,11 @@ class MultiCapture:
 
     def __repr__(self) -> str:
         return "<MultiCapture out={!r} err={!r} in_={!r} _state={!r} _in_suspended={!r}>".format(
-            self.out, self.err, self.in_, self._state, self._in_suspended,
+            self.out,
+            self.err,
+            self.in_,
+            self._state,
+            self._in_suspended,
         )
 
     def start_capturing(self) -> None:
@@ -571,15 +575,19 @@ class MultiCapture:
 
 def _get_multicapture(method: "_CaptureMethod") -> MultiCapture:
     if method == "fd":
-        return MultiCapture(in_=FDCapture(0), out=FDCapture(1), err=FDCapture(2))
+        return MultiCapture(in_=FDCapture(0),
+                            out=FDCapture(1),
+                            err=FDCapture(2))
     elif method == "sys":
-        return MultiCapture(in_=SysCapture(0), out=SysCapture(1), err=SysCapture(2))
+        return MultiCapture(in_=SysCapture(0),
+                            out=SysCapture(1),
+                            err=SysCapture(2))
     elif method == "no":
         return MultiCapture(in_=None, out=None, err=None)
     elif method == "tee-sys":
-        return MultiCapture(
-            in_=None, out=SysCapture(1, tee=True), err=SysCapture(2, tee=True)
-        )
+        return MultiCapture(in_=None,
+                            out=SysCapture(1, tee=True),
+                            err=SysCapture(2, tee=True))
     raise ValueError("unknown capturing method: {!r}".format(method))
 
 
@@ -598,7 +606,6 @@ class CaptureManager:
     * fixture: when a test function or one of its fixture depend on the ``capsys`` or ``capfd`` fixtures. In this
       case special handling is needed to ensure the fixtures take precedence over the global capture.
     """
-
     def __init__(self, method: "_CaptureMethod") -> None:
         self._method = method
         self._global_capturing = None  # type: Optional[MultiCapture]
@@ -606,8 +613,7 @@ class CaptureManager:
 
     def __repr__(self) -> str:
         return "<CaptureManager _method={!r} _global_capturing={!r} _capture_fixture={!r}>".format(
-            self._method, self._global_capturing, self._capture_fixture
-        )
+            self._method, self._global_capturing, self._capture_fixture)
 
     def is_capturing(self) -> Union[str, bool]:
         if self.is_globally_capturing():
@@ -663,9 +669,7 @@ class CaptureManager:
             requested_fixture = capture_fixture.request.fixturename
             capture_fixture.request.raiseerror(
                 "cannot use {} and {} at the same time".format(
-                    requested_fixture, current_fixture
-                )
-            )
+                    requested_fixture, current_fixture))
         self._capture_fixture = capture_fixture
 
     def unset_fixture(self) -> None:
@@ -703,7 +707,8 @@ class CaptureManager:
             self.resume()
 
     @contextlib.contextmanager
-    def item_capture(self, when: str, item: Item) -> Generator[None, None, None]:
+    def item_capture(self, when: str,
+                     item: Item) -> Generator[None, None, None]:
         self.resume_global_capture()
         self.activate_fixture()
         try:
@@ -744,7 +749,8 @@ class CaptureManager:
             yield
 
     @pytest.hookimpl(hookwrapper=True)
-    def pytest_runtest_teardown(self, item: Item) -> Generator[None, None, None]:
+    def pytest_runtest_teardown(self,
+                                item: Item) -> Generator[None, None, None]:
         with self.item_capture("teardown", item):
             yield
 
@@ -762,7 +768,6 @@ class CaptureFixture:
     Object returned by :py:func:`capsys`, :py:func:`capsysbinary`, :py:func:`capfd` and :py:func:`capfdbinary`
     fixtures.
     """
-
     def __init__(self, captureclass, request: SubRequest) -> None:
         self.captureclass = captureclass
         self.request = request
@@ -773,7 +778,9 @@ class CaptureFixture:
     def _start(self) -> None:
         if self._capture is None:
             self._capture = MultiCapture(
-                in_=None, out=self.captureclass(1), err=self.captureclass(2),
+                in_=None,
+                out=self.captureclass(1),
+                err=self.captureclass(2),
             )
             self._capture.start_capturing()
 
@@ -812,7 +819,8 @@ class CaptureFixture:
     @contextlib.contextmanager
     def disabled(self) -> Generator[None, None, None]:
         """Temporarily disables capture while inside the 'with' block."""
-        capmanager = self.request.config.pluginmanager.getplugin("capturemanager")
+        capmanager = self.request.config.pluginmanager.getplugin(
+            "capturemanager")
         with capmanager.global_and_fixture_disabled():
             yield
 
